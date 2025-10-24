@@ -23,6 +23,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         bearerFormat = "JWT"
 )
 
+// 스웨거 설정
 public class SwaggerConfig {
     @Bean
     public OpenApiCustomizer globalHeaderOpenApiCustomizer() {

@@ -51,4 +51,8 @@ public class Post {
         this.likesCount = this.viewsCount = this.commentsCount = 0;
         this.user = user;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

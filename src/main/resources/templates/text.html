@@ -1,0 +1,21 @@
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>text example</title>
+</head>
+
+<body>
+<h1>text vs utext</h1>
+<ul>
+    <li>th:text<span th:text=" ${data}">데이터 들어갈 자리</span></li>
+    <li>th:utext=<span th:utext="${data}"></span></li>
+</ul>
+<h1><span th:inline="none">[[...]] vs [(...)]</span></h1>
+<ul>
+    <li><span th:inline="none">[[...]] = </span>[[${data}]]</li>
+    <li><span th:inline="none">[(...)] = </span>[(${data})]</li>
+</ul>
+</body>
+
+</html>

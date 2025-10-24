@@ -32,4 +32,7 @@ public interface PostRepository extends JpaRepository<Post, Integer>, PostQueryR
 
     @Query("select p from Post p join fetch p.user where p.id = :id")
     Optional<Post> findByIdWithUser(@Param("id") int id);
+
+    boolean existsByTitle(String title);
+    boolean existsByContent(String content);
 }

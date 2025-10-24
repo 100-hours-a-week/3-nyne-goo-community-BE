@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.request.user.ChangePasswordRequestDto;
+import kr.kakao_tech_bootcamp.community.dto.request.user.CheckPasswordRequestDto;
+import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.GetMeResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.User;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
@@ -41,6 +43,14 @@ public class UserInfoController {
         userService.changeMyInfo(jwtProvider.getTokenFromRequest(request), nickname, image);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "회원 정보가 수정되었습니다."));
+    }
+
+    @PostMapping(path = "/password")
+    @Operation(summary = "비밀번호 확인", security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<ApiResponse<CheckPasswordResponseDto>>  checkPassword(HttpServletRequest request, @RequestBody CheckPasswordRequestDto checkPasswordRequestDto) {
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(200, "비밀번호가 일치합니다.", userService.checkPassword(jwtProvider.getTokenFromRequest(request), checkPasswordRequestDto)));
     }
 
     @PatchMapping(path = "/password")
