@@ -3,6 +3,7 @@ package kr.kakao_tech_bootcamp.community.jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import kr.kakao_tech_bootcamp.community.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,10 +53,21 @@ public class JwtProvider {
     }
 
     public String getTokenFromRequest(HttpServletRequest request) {
+        // 헤더에서 토큰 찾기
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
+
+        // 쿠키에서 토큰 찾기
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
         return null;
     }
 

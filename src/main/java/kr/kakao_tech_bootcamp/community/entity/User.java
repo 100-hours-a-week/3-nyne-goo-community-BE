@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET status = 'DELETED', deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("status != 'DELETED'")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

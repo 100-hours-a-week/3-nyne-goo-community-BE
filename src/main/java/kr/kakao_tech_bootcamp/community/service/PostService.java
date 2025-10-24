@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import kr.kakao_tech_bootcamp.community.dto.request.post.CreatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.post.UpdatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.AllPostResponseDto;
+import kr.kakao_tech_bootcamp.community.dto.response.post.CreatePostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.GetPostDetailResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.*;
 import kr.kakao_tech_bootcamp.community.exception.ForbiddenException;
@@ -55,7 +56,7 @@ public class PostService {
         return allPosts;
     }
 
-    public Post createPost(String token, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+    public CreatePostResponseDto createPost(String token, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
         int userId = jwtProvider.getIdFromToken(token);
 
         User user = userRepository.getReferenceById(userId);
@@ -66,8 +67,7 @@ public class PostService {
             post.getImages().addAll(postImageList);
         }
 
-        postRepository.save(post);
-        return post;
+        return CreatePostResponseDto.from(postRepository.save(post));
     }
 
     @Transactional(readOnly = true)
