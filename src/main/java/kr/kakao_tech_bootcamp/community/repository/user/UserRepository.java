@@ -14,6 +14,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
     Optional<User> findByNickname(String nickname);
 
+    @Query("select u from User u where u.userStatus != 'DELETED' and u.email= :email")
+    Optional<User> findByActiveEmail(String email);
+
     @Modifying
     @Query(value = "delete from User u where u.userStatus = 'DELETED' and u.deletedAt < :cutoffDate")
     void deleteByDeletedAtBefore(LocalDateTime cutoffDate);

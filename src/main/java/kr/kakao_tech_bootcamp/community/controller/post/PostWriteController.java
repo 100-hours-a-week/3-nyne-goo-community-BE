@@ -34,10 +34,9 @@ public class PostWriteController {
             @RequestPart(value="images", required=false) List<MultipartFile> imageList
     ){
         String token = jwtProvider.getTokenFromRequest(request);
-        Post post = postService.createPost(token, createPostRequestDto, imageList);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "게시글을 생성했습니다.", CreatePostResponseDto.from(post)));
+                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(token, createPostRequestDto, imageList)));
     }
 
     @PatchMapping(path = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -18,9 +18,10 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public String login(LoginRequestDto request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByActiveEmail(request.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("존재하지 않는 이메일입니다."));
 
+        System.out.println("user: " + user);
         if (!user.getPassword().equals(request.getPassword())) {
             throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
         }
