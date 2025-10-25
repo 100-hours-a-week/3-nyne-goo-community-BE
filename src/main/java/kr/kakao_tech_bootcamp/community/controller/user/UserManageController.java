@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +38,7 @@ public class UserManageController {
 
     @DeleteMapping
     @Operation(summary = "회원탈퇴", security = {@SecurityRequirement(name = "bearerAuth")})
-    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request){
+    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request) {
         userService.delete(jwtProvider.getTokenFromRequest(request));
         return ResponseEntity.ok(ApiResponse.success(200, "회원탈퇴에 성공했습니다."));
     }

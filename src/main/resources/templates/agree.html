@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>약관 동의 | 아무말 대잔치</title>
+    <link rel="stylesheet" th:href="@{/css/agree.css}" />
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+</head>
+<body>
+<div id="wrap">
+    <div class="container">
+        <h2 class="title">약관 동의</h2>
+        <p class="desc">서비스 이용을 위해 아래 약관에 동의해주세요.</p>
+
+        <!-- ✅ 전체 동의 -->
+        <div class="term-item all-agree">
+            <div class="term-header">
+                <input type="checkbox" id="agreeAll" />
+                <label for="agreeAll"><strong>[전체 동의]</strong> 모든 약관에 동의합니다.</label>
+            </div>
+        </div>
+
+        <div class="terms-box">
+            <div class="term-item">
+                <div class="term-header">
+                    <input type="checkbox" id="agreeTerms" />
+                    <label for="agreeTerms"><strong>[필수]</strong> 이용약관 동의</label>
+                </div>
+                <div class="term-content">
+                    <textarea readonly>
+제1조(목적)
+이 약관은 아무말 대잔치(이하 "회사")가 제공하는 서비스의 이용 조건 및 절차에 관한 기본적인 사항을 규정합니다.
+...
+                    </textarea>
+                </div>
+            </div>
+
+            <div class="term-item">
+                <div class="term-header">
+                    <input type="checkbox" id="agreePrivacy" />
+                    <label for="agreePrivacy"><strong>[필수]</strong> 개인정보처리방침 동의</label>
+                </div>
+                <div class="term-content">
+                    <textarea readonly>
+회사는 회원가입, 서비스 제공을 위해 다음과 같은 개인정보를 수집·이용합니다.
+...
+                    </textarea>
+                </div>
+            </div>
+        </div>
+
+        <button id="nextBtn" class="next-btn" disabled>다음</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const agreeAll = document.getElementById("agreeAll");
+    const agreeTerms = document.getElementById("agreeTerms");
+    const agreePrivacy = document.getElementById("agreePrivacy");
+    const nextBtn = document.getElementById("nextBtn");
+
+    // 전체 동의 클릭 시
+    agreeAll.addEventListener("change", () => {
+        const isChecked = agreeAll.checked;
+        agreeTerms.checked = isChecked;
+        agreePrivacy.checked = isChecked;
+        updateNextButton();
+    });
+
+    // 개별 체크 시 전체동의 상태 업데이트
+    function updateAllAgree() {
+        if (agreeTerms.checked && agreePrivacy.checked) {
+            agreeAll.checked = true;
+        } else {
+            agreeAll.checked = false;
+        }
+        updateNextButton();
+    }
+
+    agreeTerms.addEventListener("change", updateAllAgree);
+    agreePrivacy.addEventListener("change", updateAllAgree);
+
+    // 다음 버튼 활성화 여부
+    function updateNextButton() {
+        if (agreeTerms.checked && agreePrivacy.checked) {
+            nextBtn.disabled = false;
+            nextBtn.classList.add("active");
+        } else {
+            nextBtn.disabled = true;
+            nextBtn.classList.remove("active");
+        }
+    }
+
+    // 다음
+    nextBtn.addEventListener("click", () => {
+        if (!nextBtn.disabled) {
+            window.location.href = "http://localhost:3000/signup";
+        }
+    });
+</script>
+</body>
+</html>
