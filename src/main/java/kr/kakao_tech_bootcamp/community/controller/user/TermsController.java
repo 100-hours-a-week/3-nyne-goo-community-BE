@@ -11,6 +11,6 @@ public class TermsController {
     @GetMapping
     @Operation(summary = "약관 동의")
     public String agreeTemplate() {
-        return "agree";
+        return "terms";
     }
 }
