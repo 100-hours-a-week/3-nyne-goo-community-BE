@@ -7,10 +7,12 @@ import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.SignUpResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.User;
+import kr.kakao_tech_bootcamp.community.exception.ConflictException;
 import kr.kakao_tech_bootcamp.community.exception.UnauthorizedException;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.hibernate.action.internal.EntityActionVetoException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,10 +81,16 @@ public class UserService {
     }
 
     public void changeMyInfo(String token, String nickname, MultipartFile image) {
+        if(nickname==null || nickname.isEmpty()) {
+            throw new IllegalArgumentException("닉네임을 입력해주세요");
+        }
         int userId = jwtProvider.getIdFromToken(token);
         User user = userRepository.findById(userId).orElseThrow(() -> new UnauthorizedException("존재하지 않는 사용자입니다."));
 
-        user.setNickname(nickname);
+        // 닉네임 중복 사전 검증 (자기 자신 제외)
+        if (userRepository.existsByNickname(nickname) && !user.getNickname().equals(nickname)) {
+            throw new ConflictException("이미 사용 중인 닉네임입니다."); // 409 Conflict
+        }
 
         if (image != null) {
             String imageName = image.getOriginalFilename();
