@@ -53,6 +53,13 @@ public class ExceptionHandler {
                 .body(ApiResponse.fail(HttpStatus.NOT_FOUND.value(), e.getMessage()));
     }
 
+    @org.springframework.web.bind.annotation.ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConflict(ConflictException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.fail(HttpStatus.CONFLICT.value(), e.getMessage()));
+    }
+
     // 500 Internal Server Error
     @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception e, HttpServletRequest request) {
