@@ -21,7 +21,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "delete from User u where u.userStatus = 'DELETED' and u.deletedAt < :cutoffDate")
     void deleteByDeletedAtBefore(LocalDateTime cutoffDate);
 
-    /*@Modifying
-    @Query(value = "DELETE FROM User u WHERE u.status = 'DELETED'")
-    void deleteByUserStatus(UserStatus status);*/
+    boolean existsByNickname(String nickname);
 }
