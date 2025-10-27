@@ -5,7 +5,9 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import kr.kakao_tech_bootcamp.community.exception.UnauthorizedException;
+import kr.kakao_tech_bootcamp.community.exception.RestApiException;
+import kr.kakao_tech_bootcamp.community.exception.error_code.JwtErrorCode;
+import kr.kakao_tech_bootcamp.community.exception.error_code.UserErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +76,7 @@ public class JwtProvider {
     // 토큰에서 이메일 뽑기
     public Integer getIdFromToken(String token) {
         if (token == null || token.isBlank()) {
-            throw new UnauthorizedException("JWT 토큰이 존재하지 않습니다.");
+            throw new RestApiException(JwtErrorCode.TOKEN_MISSING);
         }
 
         try {
@@ -85,11 +87,11 @@ public class JwtProvider {
                     .getBody()
                     .getSubject());
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            throw new UnauthorizedException("JWT 토큰이 만료되었습니다.");
+            throw new RestApiException(JwtErrorCode.TOKEN_EXPIRED);
         } catch (io.jsonwebtoken.MalformedJwtException e) {
-            throw new UnauthorizedException("잘못된 형식의 JWT 토큰입니다.");
+            throw new RestApiException(JwtErrorCode.TOKEN_MALFORMED);
         } catch (Exception e) {
-            throw new UnauthorizedException("유효하지 않은 JWT 토큰입니다.");
+            throw new RestApiException(JwtErrorCode.TOKEN_INVALID);
         }
     }
 }

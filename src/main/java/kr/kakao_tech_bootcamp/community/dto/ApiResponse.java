@@ -1,5 +1,7 @@
 package kr.kakao_tech_bootcamp.community.dto;
 
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
+import kr.kakao_tech_bootcamp.community.exception.error_code.ErrorCodeType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ApiResponse<T> {
     private int statusCode;
+    private String code;
     private String message;
     private T data;
 
@@ -18,6 +21,7 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> success(int statusCode, String message, T data) {
         return ApiResponse.<T>builder()
                 .statusCode(statusCode)
+                .code("SUCCESS")
                 .message(message)
                 .data(data)
                 .build();
@@ -27,15 +31,17 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> success(int statusCode, String message) {
         return ApiResponse.<T>builder()
                 .statusCode(statusCode)
+                .code("SUCCESS")
                 .message(message)
                 .build();
     }
 
     // 실패
-    public static <T> ApiResponse<T> fail(int statusCode, String message) {
+    public static <T> ApiResponse<T> fail(ErrorCodeType errorCodeType) {
         return ApiResponse.<T>builder()
-                .statusCode(statusCode)
-                .message(message)
+                .statusCode(errorCodeType.getHttpStatus().value())
+                .code(errorCodeType.getCode())
+                .message(errorCodeType.getMessage())
                 .build();
     }
 }

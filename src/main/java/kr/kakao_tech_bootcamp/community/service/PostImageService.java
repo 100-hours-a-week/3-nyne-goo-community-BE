@@ -2,6 +2,8 @@ package kr.kakao_tech_bootcamp.community.service;
 
 import kr.kakao_tech_bootcamp.community.entity.Post;
 import kr.kakao_tech_bootcamp.community.entity.PostImage;
+import kr.kakao_tech_bootcamp.community.exception.RestApiException;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
 import kr.kakao_tech_bootcamp.community.repository.post.PostImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,7 +51,7 @@ public class PostImageService {
                 Path path = Paths.get(uploadDir + imageUUID);      // 파일 저장 위치 (전체 경로)
                 image.transferTo(path.toFile());                        // 파일 저장
             } catch (IOException e) {
-                throw new RuntimeException("이미지 저장 실패",e);
+                throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
             }
         }
 

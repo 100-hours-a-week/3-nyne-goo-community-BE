@@ -4,6 +4,9 @@ import kr.kakao_tech_bootcamp.community.dto.response.post.PostLikeResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.Post;
 import kr.kakao_tech_bootcamp.community.entity.PostLike;
 import kr.kakao_tech_bootcamp.community.entity.User;
+import kr.kakao_tech_bootcamp.community.exception.RestApiException;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommentErrorCode;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.manager.PostLikeCountManager;
 import kr.kakao_tech_bootcamp.community.repository.post.PostLikeRepository;
@@ -29,7 +32,7 @@ public class PostLikeService {
         User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
-        if(postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new IllegalArgumentException("이미 좋아요를 누른 게시글입니다.");
+        if(postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
 
         PostLike postLike = new PostLike(user, post);
 
@@ -46,7 +49,7 @@ public class PostLikeService {
         User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
-        if(!postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new IllegalArgumentException("좋아요를 누르지 않은 게시글입니다.");
+        if(!postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
 
         postLikeCountManager.decreaseLike(postId);
 

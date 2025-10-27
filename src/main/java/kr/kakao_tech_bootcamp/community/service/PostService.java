@@ -1,14 +1,14 @@
 package kr.kakao_tech_bootcamp.community.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import kr.kakao_tech_bootcamp.community.dto.request.post.CreatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.post.UpdatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.AllPostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.CreatePostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.GetPostDetailResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.*;
-import kr.kakao_tech_bootcamp.community.exception.ForbiddenException;
-import kr.kakao_tech_bootcamp.community.exception.UnauthorizedException;
+import kr.kakao_tech_bootcamp.community.exception.RestApiException;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
+import kr.kakao_tech_bootcamp.community.exception.error_code.PostErrorCode;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.manager.PostCommentCountManager;
 import kr.kakao_tech_bootcamp.community.manager.PostLikeCountManager;
@@ -57,11 +57,11 @@ public class PostService {
     }
 
     public CreatePostResponseDto createPost(String token, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
-        if(createPostRequestDto.getTitle().isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
-        if(createPostRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("내용을 입력해주세요.");
+        if(createPostRequestDto.getTitle().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_TITLE);
+        if(createPostRequestDto.getContent().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_CONTENT);
 
-        if(createPostRequestDto.getTitle().length()>26) throw new IllegalArgumentException("제목은 26자 이하로 작성해주세요.");
-        if(createPostRequestDto.getContent().length()>2000) throw new IllegalArgumentException("내용은 2000자 이하로 작성해주세요.");
+        if(createPostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.TOO_LONG_TITLE);
+        if(createPostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.TOO_LONG_CONTENT);
 
         int userId = jwtProvider.getIdFromToken(token);
 
@@ -79,7 +79,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public GetPostDetailResponseDto getPostDetail(String token, int postId) {
         int userId = jwtProvider.getIdFromToken(token);
-        GetPostDetailResponseDto getPostDetailResponseDto = postRepository.getPostByPostId(userId, postId).orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
+        GetPostDetailResponseDto getPostDetailResponseDto = postRepository.getPostByPostId(userId, postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
 
         postViewCountManager.increaseViewCount(postId);
 
@@ -92,16 +92,16 @@ public class PostService {
     }
 
     public void updatePost(String token, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
-        if(updatePostRequestDto.getTitle().isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
-        if(updatePostRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("내용을 입력해주세요.");
+        if(updatePostRequestDto.getTitle().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_TITLE);
+        if(updatePostRequestDto.getContent().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_CONTENT);
 
-        if(updatePostRequestDto.getTitle().length()>26) throw new IllegalArgumentException("제목은 26자 이하로 작성해주세요.");
-        if(updatePostRequestDto.getContent().length()>2000) throw new IllegalArgumentException("내용은 2000자 이하로 작성해주세요.");
+        if(updatePostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.TOO_LONG_TITLE);
+        if(updatePostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.TOO_LONG_CONTENT);
 
         int userId = jwtProvider.getIdFromToken(token);
-        Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
+        Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
 
-        if (!post.getUser().getId().equals(userId)) throw new ForbiddenException();
+        if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         post.setTitle(updatePostRequestDto.getTitle());
         post.setContent(updatePostRequestDto.getContent());
@@ -112,6 +112,7 @@ public class PostService {
                 Files.deleteIfExists(path);
             } catch (IOException e) {
                 System.err.println("이미지 파일 삭제 실패: " + path + "\ner ror:" + e.getMessage());
+                throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
             }
         }
 
@@ -124,11 +125,11 @@ public class PostService {
 
     public void deletePost(String token, int postId) {
         int userId = jwtProvider.getIdFromToken(token);
-        Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
+        Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
 
-        if (!post.getUser().getId().equals(userId)) throw new ForbiddenException();
+        if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
-        if(post.getDeletedAt()!=null) throw new IllegalStateException("이미 삭제한 게시글입니다.");
+        if(post.getDeletedAt()!=null) throw new RestApiException(PostErrorCode.ALREADY_DELETED);
 
         postRepository.delete(post);
     }
