@@ -3,6 +3,8 @@ package kr.kakao_tech_bootcamp.community.exception;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
+import kr.kakao_tech_bootcamp.community.exception.error_code.ErrorCodeType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,68 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ExceptionHandler {
 
-    // 401 Unauthorized
-    @org.springframework.web.bind.annotation.ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnauthorized(UnauthorizedException e) {
+    @org.springframework.web.bind.annotation.ExceptionHandler(RestApiException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRestApiException(RestApiException e) {
+        ErrorCodeType code = e.getErrorCode();
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.fail(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
-    }
-
-    // 400 Bad Request
-    @org.springframework.web.bind.annotation.ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.fail(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
-    }
-
-    // 400 회원가입 입력값 오류
-    @org.springframework.web.bind.annotation.ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
-        String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.fail(HttpStatus.BAD_REQUEST.value(), errorMessage));
-    }
-
-    // 403 Forbidden
-    @org.springframework.web.bind.annotation.ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ApiResponse<Void>> handleForbidden(ForbiddenException e) {
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.fail(HttpStatus.FORBIDDEN.value(), e.getMessage()));
-    }
-
-    // 404 Not Found
-    @org.springframework.web.bind.annotation.ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleEntityNotFound(EntityNotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.fail(HttpStatus.NOT_FOUND.value(), e.getMessage()));
-    }
-
-    @org.springframework.web.bind.annotation.ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiResponse<Void>> handleConflict(ConflictException e) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ApiResponse.fail(HttpStatus.CONFLICT.value(), e.getMessage()));
-    }
-
-    // 500 Internal Server Error
-    @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleException(Exception e, HttpServletRequest request) {
-        String uri = request.getRequestURI();
-
-        // 스웨거 오류
-        if (uri.startsWith("/v3/api-docs") || uri.startsWith("/swagger-ui")) {
-            throw new RuntimeException(e);
-        }
-
-        e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.fail(500, "서버 내부 오류가 발생했습니다."));
+                .status(code.getHttpStatus())
+                .body(ApiResponse.fail(e.getErrorCode()));
     }
 }
