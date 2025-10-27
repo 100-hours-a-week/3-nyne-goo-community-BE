@@ -33,15 +33,16 @@ import java.util.List;
 @Transactional
 public class PostService {
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
-    private final JwtProvider jwtProvider;
     private final PostImageService postImageService;
     private final PostViewCountManager postViewCountManager;
     private final PostCommentCountManager postCommentCountManager;
     private final PostLikeCountManager postLikeCountManager;
 
-    public Slice<AllPostResponseDto> getAllPosts(String token, Pageable pageable) {
-        int userId = jwtProvider.getIdFromToken(token);
+    public Slice<AllPostResponseDto> getAllPosts(User user, Pageable pageable) {
+        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+
+        int userId = user.getId();
+
         Slice<AllPostResponseDto> allPosts = postRepository.getAllPosts(userId, pageable);
 
         allPosts.getContent().forEach(allPostResponseDto -> {
@@ -56,16 +57,15 @@ public class PostService {
         return allPosts;
     }
 
-    public CreatePostResponseDto createPost(String token, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+    public CreatePostResponseDto createPost(User user, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+
         if(createPostRequestDto.getTitle().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_TITLE);
         if(createPostRequestDto.getContent().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_CONTENT);
 
         if(createPostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.TOO_LONG_TITLE);
         if(createPostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.TOO_LONG_CONTENT);
 
-        int userId = jwtProvider.getIdFromToken(token);
-
-        User user = userRepository.getReferenceById(userId);
         Post post = new Post(createPostRequestDto.getTitle(), createPostRequestDto.getContent(), user);
 
         if (imageList != null && !imageList.isEmpty()) {
@@ -77,9 +77,10 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public GetPostDetailResponseDto getPostDetail(String token, int postId) {
-        int userId = jwtProvider.getIdFromToken(token);
-        GetPostDetailResponseDto getPostDetailResponseDto = postRepository.getPostByPostId(userId, postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
+    public GetPostDetailResponseDto getPostDetail(User user, int postId) {
+        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+
+        GetPostDetailResponseDto getPostDetailResponseDto = postRepository.getPostByPostId(user.getId(), postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
 
         postViewCountManager.increaseViewCount(postId);
 
@@ -91,17 +92,18 @@ public class PostService {
         return getPostDetailResponseDto;
     }
 
-    public void updatePost(String token, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
+    public void updatePost(User user, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
+        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+
         if(updatePostRequestDto.getTitle().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_TITLE);
         if(updatePostRequestDto.getContent().isEmpty()) throw new RestApiException(PostErrorCode.EMPTY_CONTENT);
 
         if(updatePostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.TOO_LONG_TITLE);
         if(updatePostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.TOO_LONG_CONTENT);
 
-        int userId = jwtProvider.getIdFromToken(token);
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
 
-        if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
+        if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         post.setTitle(updatePostRequestDto.getTitle());
         post.setContent(updatePostRequestDto.getContent());
@@ -123,11 +125,12 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public void deletePost(String token, int postId) {
-        int userId = jwtProvider.getIdFromToken(token);
+    public void deletePost(User user, int postId) {
+        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(PostErrorCode.POST_NOT_FOUND));
 
-        if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
+        if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         if(post.getDeletedAt()!=null) throw new RestApiException(PostErrorCode.ALREADY_DELETED);
 

@@ -19,7 +19,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
 
     @Transactional(readOnly = true)
-    public String login(LoginRequestDto request) {
+    public User login(LoginRequestDto request) {
         User user = userRepository.findByActiveEmail(request.getEmail())
                 .orElseThrow(() -> new RestApiException(UserErrorCode.INVALID_CREDENTIALS));
 
@@ -28,6 +28,6 @@ public class AuthService {
             throw new RestApiException(UserErrorCode.INVALID_CREDENTIALS);
         }
 
-        return jwtProvider.generateAccessToken(user.getId());
+        return user;
     }
 }

@@ -20,19 +20,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class PostLikeService {
-    private final JwtProvider jwtProvider;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
-    private final UserRepository userRepository;
     private final PostLikeCountManager postLikeCountManager;
 
-    public PostLikeResponseDto createPostLike(String token, int postId){
-        int userId = jwtProvider.getIdFromToken(token);
+    public PostLikeResponseDto createPostLike(User user, int postId){
+        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
 
-        User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
-        if(postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
+        if(postLikeRepository.existsByUserIdAndPostId(user.getId(), postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
 
         PostLike postLike = new PostLike(user, post);
 
@@ -43,17 +40,16 @@ public class PostLikeService {
         return PostLikeResponseDto.of(postId, post.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
     }
 
-    public PostLikeResponseDto deletePostLike(String token, int postId){
-        int userId = jwtProvider.getIdFromToken(token);
+    public PostLikeResponseDto deletePostLike(User user, int postId){
+        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
 
-        User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
-        if(!postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
+        if(!postLikeRepository.existsByUserIdAndPostId(user.getId(), postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
 
         postLikeCountManager.decreaseLike(postId);
 
-        postLikeRepository.deleteByUserIdAndPostId(userId, postId);
+        postLikeRepository.deleteByUserIdAndPostId(user.getId(), postId);
 
         return PostLikeResponseDto.of(postId, post.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
     }
