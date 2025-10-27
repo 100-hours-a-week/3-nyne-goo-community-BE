@@ -84,6 +84,11 @@ public class UserService {
         if(nickname==null || nickname.isEmpty()) {
             throw new IllegalArgumentException("닉네임을 입력해주세요");
         }
+
+        if(nickname.length()>10) {
+            throw new IllegalArgumentException("닉네임은 1자 이상 10자 이하로 작성해야합니다.");
+        }
+
         int userId = jwtProvider.getIdFromToken(token);
         User user = userRepository.findById(userId).orElseThrow(() -> new UnauthorizedException("존재하지 않는 사용자입니다."));
 
@@ -125,6 +130,10 @@ public class UserService {
     }
 
     public void changePassword(String token, String newPassword) {
+        if(newPassword.length()<8 || newPassword.length() > 16) {
+            throw new IllegalArgumentException("비밀번호는은 8자 이상 16자 이하로 작성해야합니다.");
+        }
+
         int userId = jwtProvider.getIdFromToken(token);
         User user = userRepository.findById(userId).orElseThrow(() -> new UnauthorizedException("존재하지 않는 사용자입니다."));
 
