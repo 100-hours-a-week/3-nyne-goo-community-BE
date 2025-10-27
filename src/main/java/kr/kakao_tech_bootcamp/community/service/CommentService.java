@@ -1,6 +1,5 @@
 package kr.kakao_tech_bootcamp.community.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.ChangeCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.CreateCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.comment.AllCommentResponseDto;
@@ -9,8 +8,9 @@ import kr.kakao_tech_bootcamp.community.dto.response.comment.CreateCommentRespon
 import kr.kakao_tech_bootcamp.community.entity.Comment;
 import kr.kakao_tech_bootcamp.community.entity.Post;
 import kr.kakao_tech_bootcamp.community.entity.User;
-import kr.kakao_tech_bootcamp.community.exception.ForbiddenException;
-import kr.kakao_tech_bootcamp.community.exception.UnauthorizedException;
+import kr.kakao_tech_bootcamp.community.exception.RestApiException;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommentErrorCode;
+import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.manager.PostCommentCountManager;
 import kr.kakao_tech_bootcamp.community.repository.comment.CommentRepository;
@@ -33,8 +33,8 @@ public class CommentService {
     private final PostCommentCountManager postCommentCountManager;
 
     public CreateCommentResponseDto createComment(String token, int postId, CreateCommentRequestDto createCommentRequestDto){
-        if(createCommentRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("댓글을 작성해주세요.");
-        if(createCommentRequestDto.getContent().length()>500) throw new IllegalArgumentException("댓글은 500자 이하로 작성해주세요.");
+        if(createCommentRequestDto.getContent().isEmpty()) throw new RestApiException(CommentErrorCode.EMPTY_CONTENT);
+        if(createCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.TOO_LONG_CONTENT);
 
         int userId = jwtProvider.getIdFromToken(token);
 
@@ -56,16 +56,16 @@ public class CommentService {
     }
 
     public ChangeCommentResponseDto changeComment(String token, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
-        if(changeCommentRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("댓글을 작성해주세요.");
-        if(changeCommentRequestDto.getContent().length()>500) throw new IllegalArgumentException("댓글은 500자 이하로 작성해주세요.");
+        if(changeCommentRequestDto.getContent().isEmpty()) throw new RestApiException(CommentErrorCode.EMPTY_CONTENT);
+        if(changeCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.TOO_LONG_CONTENT);
 
         int userId = jwtProvider.getIdFromToken(token);
 
         Comment comment = commentRepository.findByIdWithUser(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));
 
         if (!comment.getUser().getId().equals(userId)) {
-            throw new ForbiddenException();
+            throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
         comment.setContent(changeCommentRequestDto.getContent());
@@ -77,10 +77,10 @@ public class CommentService {
         int userId = jwtProvider.getIdFromToken(token);
 
         Comment comment = commentRepository.findByIdWithUserAndPost(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));
 
         if (!comment.getUser().getId().equals(userId)) {
-            throw new ForbiddenException();
+            throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
         commentRepository.delete(comment);
