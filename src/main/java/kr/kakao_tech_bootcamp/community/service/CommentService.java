@@ -33,6 +33,9 @@ public class CommentService {
     private final PostCommentCountManager postCommentCountManager;
 
     public CreateCommentResponseDto createComment(String token, int postId, CreateCommentRequestDto createCommentRequestDto){
+        if(createCommentRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("댓글을 작성해주세요.");
+        if(createCommentRequestDto.getContent().length()>500) throw new IllegalArgumentException("댓글은 500자 이하로 작성해주세요.");
+
         int userId = jwtProvider.getIdFromToken(token);
 
         User user = userRepository.getReferenceById(userId);
@@ -53,6 +56,9 @@ public class CommentService {
     }
 
     public ChangeCommentResponseDto changeComment(String token, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
+        if(changeCommentRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("댓글을 작성해주세요.");
+        if(changeCommentRequestDto.getContent().length()>500) throw new IllegalArgumentException("댓글은 500자 이하로 작성해주세요.");
+
         int userId = jwtProvider.getIdFromToken(token);
 
         Comment comment = commentRepository.findByIdWithUser(commentId)

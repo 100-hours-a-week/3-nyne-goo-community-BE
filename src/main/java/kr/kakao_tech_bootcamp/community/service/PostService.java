@@ -57,6 +57,12 @@ public class PostService {
     }
 
     public CreatePostResponseDto createPost(String token, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+        if(createPostRequestDto.getTitle().isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
+        if(createPostRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("내용을 입력해주세요.");
+
+        if(createPostRequestDto.getTitle().length()>26) throw new IllegalArgumentException("제목은 26자 이하로 작성해주세요.");
+        if(createPostRequestDto.getContent().length()>2000) throw new IllegalArgumentException("내용은 2000자 이하로 작성해주세요.");
+
         int userId = jwtProvider.getIdFromToken(token);
 
         User user = userRepository.getReferenceById(userId);
@@ -86,6 +92,12 @@ public class PostService {
     }
 
     public void updatePost(String token, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
+        if(updatePostRequestDto.getTitle().isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
+        if(updatePostRequestDto.getContent().isEmpty()) throw new IllegalArgumentException("내용을 입력해주세요.");
+
+        if(updatePostRequestDto.getTitle().length()>26) throw new IllegalArgumentException("제목은 26자 이하로 작성해주세요.");
+        if(updatePostRequestDto.getContent().length()>2000) throw new IllegalArgumentException("내용은 2000자 이하로 작성해주세요.");
+
         int userId = jwtProvider.getIdFromToken(token);
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
 
