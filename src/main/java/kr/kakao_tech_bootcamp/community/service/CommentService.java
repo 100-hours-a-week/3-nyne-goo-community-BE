@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import kr.kakao_tech_bootcamp.community.dto.SessionUserDto;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.ChangeCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.CreateCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.comment.AllCommentResponseDto;
@@ -26,19 +27,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class CommentService {
-    private final JwtProvider jwtProvider;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final PostCommentCountManager postCommentCountManager;
 
-    public CreateCommentResponseDto createComment(String token, int postId, CreateCommentRequestDto createCommentRequestDto){
+    public CreateCommentResponseDto createComment(SessionUserDto sessionUserDto, int postId, CreateCommentRequestDto createCommentRequestDto){
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
         if(createCommentRequestDto.getContent().isEmpty()) throw new RestApiException(CommentErrorCode.EMPTY_CONTENT);
         if(createCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.TOO_LONG_CONTENT);
 
-        int userId = jwtProvider.getIdFromToken(token);
-
-        User user = userRepository.getReferenceById(userId);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         Post post = postRepository.getReferenceById(postId);
 
         Comment comment = new Comment(createCommentRequestDto.getContent(), user, post);
@@ -50,21 +49,22 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<AllCommentResponseDto> getAllComments(String token, int postId, Pageable pageable) {
-        int userId = jwtProvider.getIdFromToken(token);
-        return commentRepository.getAllComments(userId, postId, pageable);
+    public Slice<AllCommentResponseDto> getAllComments(SessionUserDto sessionUserDto, int postId, Pageable pageable) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        return commentRepository.getAllComments(sessionUserDto.getUserId(), postId, pageable);
     }
 
-    public ChangeCommentResponseDto changeComment(String token, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
+    public ChangeCommentResponseDto changeComment(SessionUserDto sessionUserDto, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
+
         if(changeCommentRequestDto.getContent().isEmpty()) throw new RestApiException(CommentErrorCode.EMPTY_CONTENT);
         if(changeCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.TOO_LONG_CONTENT);
-
-        int userId = jwtProvider.getIdFromToken(token);
 
         Comment comment = commentRepository.findByIdWithUser(commentId)
                 .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getUser().getId().equals(userId)) {
+        if (!comment.getUser().equals(user)) {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
@@ -73,13 +73,14 @@ public class CommentService {
         return ChangeCommentResponseDto.from(comment);
     }
 
-    public void deleteComment(String token, int commentId) {
-        int userId = jwtProvider.getIdFromToken(token);
+    public void deleteComment(SessionUserDto sessionUserDto, int commentId) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
 
         Comment comment = commentRepository.findByIdWithUserAndPost(commentId)
                 .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getUser().getId().equals(userId)) {
+        if (!comment.getUser().equals(user)) {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 

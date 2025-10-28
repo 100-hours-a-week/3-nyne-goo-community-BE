@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import kr.kakao_tech_bootcamp.community.dto.SessionUserDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.PostLikeResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.Post;
 import kr.kakao_tech_bootcamp.community.entity.PostLike;
@@ -20,19 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class PostLikeService {
-    private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
-    private final UserRepository userRepository;
     private final PostLikeCountManager postLikeCountManager;
 
-    public PostLikeResponseDto createPostLike(String token, int postId){
-        int userId = jwtProvider.getIdFromToken(token);
-
-        User user = userRepository.getReferenceById(userId);
+    public PostLikeResponseDto createPostLike(SessionUserDto sessionUserDto, int postId){
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         Post post = postRepository.getReferenceById(postId);
 
-        if(postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
+        if(postLikeRepository.existsByUserIdAndPostId(user.getId(), postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
 
         PostLike postLike = new PostLike(user, post);
 
@@ -43,17 +42,16 @@ public class PostLikeService {
         return PostLikeResponseDto.of(postId, post.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
     }
 
-    public PostLikeResponseDto deletePostLike(String token, int postId){
-        int userId = jwtProvider.getIdFromToken(token);
-
-        User user = userRepository.getReferenceById(userId);
+    public PostLikeResponseDto deletePostLike(SessionUserDto sessionUserDto, int postId){
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         Post post = postRepository.getReferenceById(postId);
 
-        if(!postLikeRepository.existsByUserIdAndPostId(userId, postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
+        if(!postLikeRepository.existsByUserIdAndPostId(user.getId(), postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
 
         postLikeCountManager.decreaseLike(postId);
 
-        postLikeRepository.deleteByUserIdAndPostId(userId, postId);
+        postLikeRepository.deleteByUserIdAndPostId(user.getId(), postId);
 
         return PostLikeResponseDto.of(postId, post.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
     }

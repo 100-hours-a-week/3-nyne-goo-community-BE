@@ -3,6 +3,7 @@ package kr.kakao_tech_bootcamp.community.controller.user;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.request.user.EmailCheckRequestDto;
@@ -11,6 +12,7 @@ import kr.kakao_tech_bootcamp.community.dto.response.user.ExistCheckResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.SignUpResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.User;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
+import kr.kakao_tech_bootcamp.community.manager.SessionManager;
 import kr.kakao_tech_bootcamp.community.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,8 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserManageController {
-    private final JwtProvider jwtProvider;
     private final UserService userService;
+    private final SessionManager sessionManager;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "회원가입")
@@ -38,24 +40,22 @@ public class UserManageController {
 
     @DeleteMapping
     @Operation(summary = "회원탈퇴", security = {@SecurityRequirement(name = "bearerAuth")})
-    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request) {
-        userService.delete(jwtProvider.getTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request, HttpServletResponse response) {
+        userService.delete(sessionManager.getSession(request, response));
         return ResponseEntity.ok(ApiResponse.success(200, "회원탈퇴에 성공했습니다."));
     }
 
     @PostMapping("/availability")
     @Operation(summary = "이메일 중복 확인")
     public ResponseEntity<ApiResponse<ExistCheckResponseDto>> checkAvailability(@RequestBody EmailCheckRequestDto emailCheckRequestDto) {
-        boolean existEmail = userService.existEmail(emailCheckRequestDto.getEmail());
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(200, "이메일 중복확인에 성공했습니다.", ExistCheckResponseDto.of(existEmail)));
+                .body(ApiResponse.success(200, "이메일 중복확인에 성공했습니다.", userService.existEmail(emailCheckRequestDto.getEmail())));
     }
 
     @GetMapping("/availability")
     @Operation(summary = "닉네임 중복 확인")
     public ResponseEntity<ApiResponse<ExistCheckResponseDto>> checkAvailability(@RequestParam("nickname") String nickname) {
-        boolean existNickname = userService.existNickname(nickname);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(200, "닉네임 중복확인에 성공했습니다.", ExistCheckResponseDto.of(existNickname)));
+                .body(ApiResponse.success(200, "닉네임 중복확인에 성공했습니다.", userService.existNickname(nickname)));
     }
 }
