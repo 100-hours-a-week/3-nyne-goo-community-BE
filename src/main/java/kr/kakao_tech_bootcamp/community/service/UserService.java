@@ -1,9 +1,13 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.UserStatus;
 import kr.kakao_tech_bootcamp.community.dto.request.user.CheckPasswordRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseDto;
+import kr.kakao_tech_bootcamp.community.dto.response.user.GetMeResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.SignUpResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.User;
 import kr.kakao_tech_bootcamp.community.exception.RestApiException;
@@ -23,10 +27,11 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class UserService {
-    private final JwtProvider jwtProvider;
+
+    private final AuthHelper authHelper;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
@@ -59,12 +64,12 @@ public class UserService {
             }
         }
 
-        if(signUpRequestDto.getNickname().length() > 10 || signUpRequestDto.getNickname().length() ==0) {
-            throw new RestApiException(UserErrorCode.TOO_LONG_NICKNAME);
+        if (signUpRequestDto.getNickname().length() > 10 || signUpRequestDto.getNickname().length() == 0) {
+            throw new RestApiException(UserErrorCode.INVALID_NICKNAME);
         }
 
-        if(signUpRequestDto.getPassword().length()>16 || signUpRequestDto.getPassword().length() <8) {
-            throw new RestApiException(UserErrorCode.TOO_LONG_PASSWORD);
+        if (signUpRequestDto.getPassword().length() > 16 || signUpRequestDto.getPassword().length() < 8) {
+            throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
         }
 
         User user = new User(signUpRequestDto, imageUUID, imageName);
@@ -72,22 +77,21 @@ public class UserService {
     }
 
     @Transactional(readOnly = true) // 읽기 전용. 변경 감지 x -> 불필요한 DB I/O 생략
-    public User getMyInfo(String token) {
-        int userId = jwtProvider.getIdFromToken(token);
-        return userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.UNAUTHORIZED));
+    public GetMeResponseDto getMyInfo(HttpServletRequest request) {
+        User user = userRepository.findById(authHelper.findUserFromRequest(request).getId()).orElseThrow(() -> new RestApiException(CommonErrorCode.UNAUTHORIZED));
+        return GetMeResponseDto.from(user);
     }
 
-    public void changeMyInfo(String token, String nickname, MultipartFile image) {
-        if(nickname==null || nickname.isEmpty()) {
+    public void changeMyInfo(HttpServletRequest request, String nickname, MultipartFile image) {
+        if (nickname == null || nickname.isEmpty()) {
             throw new IllegalArgumentException("닉네임을 입력해주세요");
         }
 
-        if(nickname.length()>10) {
-            throw new RestApiException(UserErrorCode.TOO_LONG_NICKNAME);
+        if (nickname.length() > 10) {
+            throw new RestApiException(UserErrorCode.INVALID_NICKNAME);
         }
 
-        int userId = jwtProvider.getIdFromToken(token);
-        User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.UNAUTHORIZED));
+        User user = authHelper.findUserFromRequest(request);
 
         // 닉네임 중복 사전 검증 (자기 자신 제외)
         if (userRepository.existsByNickname(nickname) && !user.getNickname().equals(nickname)) {
@@ -114,39 +118,39 @@ public class UserService {
         }
     }
 
-    public CheckPasswordResponseDto checkPassword(String token, CheckPasswordRequestDto checkPasswordRequestDto) {
-        int userId = jwtProvider.getIdFromToken(token);
-        User user = userRepository.getReferenceById(userId);
+    public CheckPasswordResponseDto checkPassword(HttpServletRequest request, CheckPasswordRequestDto checkPasswordRequestDto) {
+        User user = authHelper.findUserFromRequest(request);
 
-        System.out.println("password: "+user.getPassword()+"input: "+checkPasswordRequestDto.getPassword());
+        System.out.println("password: " + user.getPassword() + "input: " + checkPasswordRequestDto.getPassword());
 
         boolean isMatch = user.getPassword().equals(checkPasswordRequestDto.getPassword());
-        if(!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
+        if (!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
 
         return CheckPasswordResponseDto.from(isMatch);
     }
 
-    public void changePassword(String token, String newPassword) {
-        if(newPassword.length()<8 || newPassword.length() > 16) {
-            throw new RestApiException(UserErrorCode.TOO_LONG_PASSWORD);
+    public void changePassword(HttpServletRequest request, String newPassword) {
+        if (newPassword.length() < 8 || newPassword.length() > 16) {
+            throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
         }
 
-        int userId = jwtProvider.getIdFromToken(token);
-        User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.UNAUTHORIZED));
+        User user = authHelper.findUserFromRequest(request);
 
         user.setPassword(newPassword);
 
         // save() 불필요 -> dirty checking 자동 처리!
     }
 
-    public void delete(String token) {
-        int userId = jwtProvider.getIdFromToken(token);
-        User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.UNAUTHORIZED));
+    public void delete(HttpServletRequest request, HttpServletResponse response) {
+        User user = authHelper.findUserFromRequest(request);
 
         if (user.getUserStatus() == UserStatus.DELETED) {
-            throw new RestApiException(UserErrorCode.ALREADY_DELETED);
+            throw new RestApiException(CommonErrorCode.BAD_REQUEST );
         }
 
         userRepository.delete(user);
+
+        authHelper.addTokenCookie(response, "accessToken", null, 0);
+        authHelper.addTokenCookie(response, "refreshToken", null, 0);
     }
 }

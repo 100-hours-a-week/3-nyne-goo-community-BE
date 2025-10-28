@@ -24,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostWriteController {
     private final PostService postService;
-    private final JwtProvider jwtProvider;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "게시글 생성", security = {@SecurityRequirement(name = "bearerAuth")})
@@ -33,10 +32,8 @@ public class PostWriteController {
             @ModelAttribute CreatePostRequestDto createPostRequestDto,
             @RequestPart(value="images", required=false) List<MultipartFile> imageList
     ){
-        String token = jwtProvider.getTokenFromRequest(request);
-
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(token, createPostRequestDto, imageList)));
+                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(request, createPostRequestDto, imageList)));
     }
 
     @PatchMapping(path = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,8 +44,7 @@ public class PostWriteController {
             @ModelAttribute UpdatePostRequestDto updatePostRequestDto,
             @RequestPart(value="images", required = false) List<MultipartFile> imageList
     ){
-        String token = jwtProvider.getTokenFromRequest(request);
-        postService.updatePost(token, postId, updatePostRequestDto, imageList);
+        postService.updatePost(request, postId, updatePostRequestDto, imageList);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "게시글 수정에 성공했습니다."));
@@ -60,8 +56,7 @@ public class PostWriteController {
             HttpServletRequest request,
             @PathVariable int postId
     ){
-        String token = jwtProvider.getTokenFromRequest(request);
-        postService.deletePost(token, postId);
+        postService.deletePost(request, postId);
 
         return ResponseEntity.ok(ApiResponse.success(200, "게시글을 삭제했습니다."));
     }

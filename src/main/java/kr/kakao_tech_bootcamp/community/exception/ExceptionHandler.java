@@ -1,13 +1,8 @@
 package kr.kakao_tech_bootcamp.community.exception;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
-import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
 import kr.kakao_tech_bootcamp.community.exception.error_code.ErrorCodeType;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice

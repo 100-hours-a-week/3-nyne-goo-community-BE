@@ -15,19 +15,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/posts/{postId}/likes")
 @RequiredArgsConstructor
 public class PostLikeController {
-    private final JwtProvider jwtProvider;
     private final PostLikeService postLikeService;
 
     @PostMapping
     @Operation(summary = "좋아요 등록")
     public ResponseEntity<ApiResponse<PostLikeResponseDto>> postLike(HttpServletRequest request, @PathVariable int postId){
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "좋아요가 등록되었습니다.", postLikeService.createPostLike(jwtProvider.getTokenFromRequest(request), postId)));
+                .body(ApiResponse.success(201, "좋아요가 등록되었습니다.", postLikeService.createPostLike(request, postId)));
     }
 
     @DeleteMapping
     @Operation(summary = "좋아요 취소")
     public ResponseEntity<ApiResponse<PostLikeResponseDto>> deleteLike(HttpServletRequest request, @PathVariable int postId){
-        return ResponseEntity.ok(ApiResponse.success(200, "좋아요가 취소되었습니다.", postLikeService.deletePostLike(jwtProvider.getTokenFromRequest(request), postId)));
+        return ResponseEntity.ok(ApiResponse.success(200, "좋아요가 취소되었습니다.", postLikeService.deletePostLike(request, postId)));
     }
 }

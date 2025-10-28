@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PostReadController {
     private final PostService postService;
-    private final JwtProvider jwtProvider;
 
     @GetMapping
     @Operation(summary = "모든 게시글 조회", security = {@SecurityRequirement(name = "bearerAuth")})
@@ -31,7 +30,7 @@ public class PostReadController {
             @ParameterObject
             @PageableDefault(size = 10, sort = "createdAt")
             Pageable pageable){
-        Slice<AllPostResponseDto> postSlice= postService.getAllPosts(jwtProvider.getTokenFromRequest(request), pageable);
+        Slice<AllPostResponseDto> postSlice= postService.getAllPosts(request, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "게시글 전체 조회에 성공했습니다.", postSlice));
@@ -45,10 +44,8 @@ public class PostReadController {
             HttpServletRequest request,
             @PathVariable int postId
     ){
-        String token = jwtProvider.getTokenFromRequest(request);
-
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(200, "게시글을 성공적으로 조회했습니다.", postService.getPostDetail(token, postId)));
+                .body(ApiResponse.success(200, "게시글을 성공적으로 조회했습니다.", postService.getPostDetail(request, postId)));
     }
 
 
