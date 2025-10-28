@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import kr.kakao_tech_bootcamp.community.dto.SessionUserDto;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.ChangeCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.CreateCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.comment.AllCommentResponseDto;
@@ -28,13 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final PostCommentCountManager postCommentCountManager;
 
-    public CreateCommentResponseDto createComment(User user, int postId, CreateCommentRequestDto createCommentRequestDto){
-        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+    public CreateCommentResponseDto createComment(SessionUserDto sessionUserDto, int postId, CreateCommentRequestDto createCommentRequestDto){
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
         if(createCommentRequestDto.getContent().isEmpty()) throw new RestApiException(CommentErrorCode.EMPTY_CONTENT);
         if(createCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.TOO_LONG_CONTENT);
 
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         Post post = postRepository.getReferenceById(postId);
 
         Comment comment = new Comment(createCommentRequestDto.getContent(), user, post);
@@ -46,13 +49,14 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<AllCommentResponseDto> getAllComments(User user, int postId, Pageable pageable) {
-        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
-        return commentRepository.getAllComments(user.getId(), postId, pageable);
+    public Slice<AllCommentResponseDto> getAllComments(SessionUserDto sessionUserDto, int postId, Pageable pageable) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        return commentRepository.getAllComments(sessionUserDto.getUserId(), postId, pageable);
     }
 
-    public ChangeCommentResponseDto changeComment(User user, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
-        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+    public ChangeCommentResponseDto changeComment(SessionUserDto sessionUserDto, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
 
         if(changeCommentRequestDto.getContent().isEmpty()) throw new RestApiException(CommentErrorCode.EMPTY_CONTENT);
         if(changeCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.TOO_LONG_CONTENT);
@@ -69,8 +73,9 @@ public class CommentService {
         return ChangeCommentResponseDto.from(comment);
     }
 
-    public void deleteComment(User user, int commentId) {
-        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+    public void deleteComment(SessionUserDto sessionUserDto, int commentId) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
 
         Comment comment = commentRepository.findByIdWithUserAndPost(commentId)
                 .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));

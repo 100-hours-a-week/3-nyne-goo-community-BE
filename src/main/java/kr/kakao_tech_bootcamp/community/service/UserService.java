@@ -1,6 +1,7 @@
 package kr.kakao_tech_bootcamp.community.service;
 
 import kr.kakao_tech_bootcamp.community.UserStatus;
+import kr.kakao_tech_bootcamp.community.dto.SessionUserDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.CheckPasswordRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseDto;
@@ -63,11 +64,11 @@ public class UserService {
             }
         }
 
-        if(signUpRequestDto.getNickname().length() > 10 || signUpRequestDto.getNickname().length() ==0) {
+        if (signUpRequestDto.getNickname().length() > 10 || signUpRequestDto.getNickname().length() == 0) {
             throw new RestApiException(UserErrorCode.TOO_LONG_NICKNAME);
         }
 
-        if(signUpRequestDto.getPassword().length()>16 || signUpRequestDto.getPassword().length() <8) {
+        if (signUpRequestDto.getPassword().length() > 16 || signUpRequestDto.getPassword().length() < 8) {
             throw new RestApiException(UserErrorCode.TOO_LONG_PASSWORD);
         }
 
@@ -76,19 +77,21 @@ public class UserService {
     }
 
     @Transactional(readOnly = true) // 읽기 전용. 변경 감지 x -> 불필요한 DB I/O 생략
-    public GetMeResponseDto getMyInfo(User user) {
-        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+    public GetMeResponseDto getMyInfo(SessionUserDto sessionUserDto) {
+        if(sessionUserDto == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         return GetMeResponseDto.from(user);
     }
 
-    public void changeMyInfo(User user, String nickname, MultipartFile image) {
-        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+    public void changeMyInfo(SessionUserDto sessionUserDto, String nickname, MultipartFile image) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
 
-        if(nickname==null || nickname.isEmpty()) {
+        if (nickname == null || nickname.isEmpty()) {
             throw new IllegalArgumentException("닉네임을 입력해주세요");
         }
 
-        if(nickname.length()>10) {
+        if (nickname.length() > 10) {
             throw new RestApiException(UserErrorCode.TOO_LONG_NICKNAME);
         }
 
@@ -117,19 +120,18 @@ public class UserService {
         }
     }
 
-    public CheckPasswordResponseDto checkPassword(User user, CheckPasswordRequestDto checkPasswordRequestDto) {
-        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
-
+    public CheckPasswordResponseDto checkPassword(SessionUserDto sessionUserDto, CheckPasswordRequestDto checkPasswordRequestDto) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         boolean isMatch = user.getPassword().equals(checkPasswordRequestDto.getPassword());
-        if(!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
+        if (!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
 
         return CheckPasswordResponseDto.from(isMatch);
     }
 
-    public void changePassword(User user, String newPassword) {
-        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
-
-        if(newPassword.length()<8 || newPassword.length() > 16) {
+    public void changePassword(SessionUserDto sessionUserDto, String newPassword) {
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
+        if (newPassword.length() < 8 || newPassword.length() > 16) {
             throw new RestApiException(UserErrorCode.TOO_LONG_PASSWORD);
         }
 
@@ -138,9 +140,9 @@ public class UserService {
         // save() 불필요 -> dirty checking 자동 처리!
     }
 
-    public void delete(User user) {
-        if(user == null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
-
+    public void delete(SessionUserDto sessionUserDto) {
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         if (user.getUserStatus() == UserStatus.DELETED) {
             throw new RestApiException(UserErrorCode.ALREADY_DELETED);
         }

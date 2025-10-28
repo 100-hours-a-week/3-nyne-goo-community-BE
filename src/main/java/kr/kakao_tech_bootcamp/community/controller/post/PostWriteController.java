@@ -3,6 +3,7 @@ package kr.kakao_tech_bootcamp.community.controller.post;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.request.post.CreatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.post.UpdatePostRequestDto;
@@ -31,22 +32,24 @@ public class PostWriteController {
     @Operation(summary = "게시글 생성", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
             HttpServletRequest request,
+            HttpServletResponse response,
             @ModelAttribute CreatePostRequestDto createPostRequestDto,
             @RequestPart(value="images", required=false) List<MultipartFile> imageList
     ){
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(sessionManager.getSession(request), createPostRequestDto, imageList)));
+                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(sessionManager.getSession(request, response), createPostRequestDto, imageList)));
     }
 
     @PatchMapping(path = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "게시글 수정", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>>  updatePost(
             HttpServletRequest request,
+            HttpServletResponse response,
             @PathVariable int postId,
             @ModelAttribute UpdatePostRequestDto updatePostRequestDto,
             @RequestPart(value="images", required = false) List<MultipartFile> imageList
     ){
-        postService.updatePost(sessionManager.getSession(request), postId, updatePostRequestDto, imageList);
+        postService.updatePost(sessionManager.getSession(request, response), postId, updatePostRequestDto, imageList);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "게시글 수정에 성공했습니다."));
@@ -56,9 +59,10 @@ public class PostWriteController {
     @Operation(summary = "게시글 삭제", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>> deletePost(
             HttpServletRequest request,
+            HttpServletResponse response,
             @PathVariable int postId
     ){
-        postService.deletePost(sessionManager.getSession(request), postId);
+        postService.deletePost(sessionManager.getSession(request, response), postId);
 
         return ResponseEntity.ok(ApiResponse.success(200, "게시글을 삭제했습니다."));
     }

@@ -2,6 +2,7 @@ package kr.kakao_tech_bootcamp.community.controller.post;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.response.post.PostLikeResponseDto;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
@@ -21,14 +22,14 @@ public class PostLikeController {
 
     @PostMapping
     @Operation(summary = "좋아요 등록")
-    public ResponseEntity<ApiResponse<PostLikeResponseDto>> postLike(HttpServletRequest request, @PathVariable int postId){
+    public ResponseEntity<ApiResponse<PostLikeResponseDto>> postLike(HttpServletRequest request, HttpServletResponse response, @PathVariable int postId){
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "좋아요가 등록되었습니다.", postLikeService.createPostLike(sessionManager.getSession(request), postId)));
+                .body(ApiResponse.success(201, "좋아요가 등록되었습니다.", postLikeService.createPostLike(sessionManager.getSession(request, response), postId)));
     }
 
     @DeleteMapping
     @Operation(summary = "좋아요 취소")
-    public ResponseEntity<ApiResponse<PostLikeResponseDto>> deleteLike(HttpServletRequest request, @PathVariable int postId){
-        return ResponseEntity.ok(ApiResponse.success(200, "좋아요가 취소되었습니다.", postLikeService.deletePostLike(sessionManager.getSession(request), postId)));
+    public ResponseEntity<ApiResponse<PostLikeResponseDto>> deleteLike(HttpServletRequest request, HttpServletResponse response, @PathVariable int postId){
+        return ResponseEntity.ok(ApiResponse.success(200, "좋아요가 취소되었습니다.", postLikeService.deletePostLike(sessionManager.getSession(request, response), postId)));
     }
 }

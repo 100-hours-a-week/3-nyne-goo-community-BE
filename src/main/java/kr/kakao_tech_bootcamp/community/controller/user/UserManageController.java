@@ -3,6 +3,7 @@ package kr.kakao_tech_bootcamp.community.controller.user;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.request.user.EmailCheckRequestDto;
@@ -39,8 +40,8 @@ public class UserManageController {
 
     @DeleteMapping
     @Operation(summary = "회원탈퇴", security = {@SecurityRequirement(name = "bearerAuth")})
-    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request) {
-        userService.delete(sessionManager.getSession(request));
+    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request, HttpServletResponse response) {
+        userService.delete(sessionManager.getSession(request, response));
         return ResponseEntity.ok(ApiResponse.success(200, "회원탈퇴에 성공했습니다."));
     }
 

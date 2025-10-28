@@ -2,6 +2,7 @@ package kr.kakao_tech_bootcamp.community.controller.comment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.request.comment.CreateCommentRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.comment.AllCommentResponseDto;
@@ -30,21 +31,22 @@ public class PostCommentController {
     @Operation(summary = "게시물의 댓글 조회")
     public ResponseEntity<ApiResponse<Slice<AllCommentResponseDto>>> getCommentsByPostId(
             HttpServletRequest request,
+            HttpServletResponse response,
             @PathVariable int postId,
             @ParameterObject
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "댓글 리스트를 성공적으로 조회했습니다.",
-                        commentService.getAllComments(sessionManager.getSession(request), postId, pageable)));
+                        commentService.getAllComments(sessionManager.getSession(request, response), postId, pageable)));
     }
 
     @PostMapping
     @Operation(summary = "댓글 작성")
-    public ResponseEntity<ApiResponse<CreateCommentResponseDto>> createComment(HttpServletRequest request, @PathVariable int postId, @RequestBody CreateCommentRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<CreateCommentResponseDto>> createComment(HttpServletRequest request, HttpServletResponse response,@PathVariable int postId, @RequestBody CreateCommentRequestDto requestDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "댓글을 등록했습니다.", commentService.createComment(sessionManager.getSession(request), postId, requestDto)));
+                .body(ApiResponse.success(201, "댓글을 등록했습니다.", commentService.createComment(sessionManager.getSession(request, response), postId, requestDto)));
     }
 
 }

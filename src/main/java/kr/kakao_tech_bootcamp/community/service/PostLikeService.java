@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import kr.kakao_tech_bootcamp.community.dto.SessionUserDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.PostLikeResponseDto;
 import kr.kakao_tech_bootcamp.community.entity.Post;
 import kr.kakao_tech_bootcamp.community.entity.PostLike;
@@ -20,13 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class PostLikeService {
+    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostLikeCountManager postLikeCountManager;
 
-    public PostLikeResponseDto createPostLike(User user, int postId){
-        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
-
+    public PostLikeResponseDto createPostLike(SessionUserDto sessionUserDto, int postId){
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         Post post = postRepository.getReferenceById(postId);
 
         if(postLikeRepository.existsByUserIdAndPostId(user.getId(), postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
@@ -40,9 +42,9 @@ public class PostLikeService {
         return PostLikeResponseDto.of(postId, post.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
     }
 
-    public PostLikeResponseDto deletePostLike(User user, int postId){
-        if(user==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
-
+    public PostLikeResponseDto deletePostLike(SessionUserDto sessionUserDto, int postId){
+        if(sessionUserDto==null) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
+        User user = userRepository.getReferenceById(sessionUserDto.getUserId());
         Post post = postRepository.getReferenceById(postId);
 
         if(!postLikeRepository.existsByUserIdAndPostId(user.getId(), postId)) throw new RestApiException(CommonErrorCode.CONFLICT);
