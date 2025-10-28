@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kr.kakao_tech_bootcamp.community.service.post.PostServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-10-21T05:15:00.670Z" hostname="nynes-MacBook-Pro.local" time="0.678">
+  <properties/>
+  <testcase name="게시글 생성 후 해당 내용이 응답되는지 확인한다." classname="kr.kakao_tech_bootcamp.community.service.post.PostServiceTest" time="0.678"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/Users/nyne/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.14.13/979ce25f7d3096a2e82214ba7dc972a05ce7a171/byte-buddy-agent-1.14.13.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>
