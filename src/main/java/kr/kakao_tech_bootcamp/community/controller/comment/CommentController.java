@@ -28,18 +28,15 @@ public class CommentController {
     @PatchMapping
     @Operation(summary = "댓글 수정")
     public ResponseEntity<ApiResponse<ChangeCommentResponseDto>> changeComment(HttpServletRequest request, @PathVariable int commentId, @RequestBody ChangeCommentRequestDto requestDto) {
-        String token = jwtProvider.getTokenFromRequest(request);
-
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "댓글을 수정했습니다.",
-                        commentService.changeComment(token, commentId, requestDto)));
+                        commentService.changeComment(request, commentId, requestDto)));
     }
 
     @DeleteMapping
     @Operation(summary = "댓글 삭제")
     public ResponseEntity<ApiResponse<Void>> deleteComment(HttpServletRequest request, @PathVariable int commentId) {
-        String token = jwtProvider.getTokenFromRequest(request);
-        commentService.deleteComment(token, commentId);
+        commentService.deleteComment(request, commentId);
         return ResponseEntity.ok(ApiResponse.success(200, "댓글을 삭제했습니다."));
     }
 }
