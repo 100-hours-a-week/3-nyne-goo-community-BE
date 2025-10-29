@@ -30,11 +30,11 @@ spring:
     suffix: .html
     cache: false
 
+  profiles:
+    include: secret
+
 logging:
   level:
     org.hibernate.SQL: debug
     org.springframework.web: DEBUG
     org.springframework.transaction: DEBUG
-
-jwt:
-  secret: "secret_key_should_be_very_long_value_1234512345_secret_key_should_be_very_long_value_1234512345_secret_key_should_be_very_long_value_1234512345"

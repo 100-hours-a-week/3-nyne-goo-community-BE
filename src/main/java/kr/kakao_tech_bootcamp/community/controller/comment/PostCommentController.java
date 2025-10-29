@@ -33,21 +33,18 @@ public class PostCommentController {
             @ParameterObject
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        String token = jwtProvider.getTokenFromRequest(request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "댓글 리스트를 성공적으로 조회했습니다.",
-                        commentService.getAllComments(token, postId, pageable)));
+                        commentService.getAllComments(request, postId, pageable)));
     }
 
     @PostMapping
     @Operation(summary = "댓글 작성")
     public ResponseEntity<ApiResponse<CreateCommentResponseDto>> createComment(HttpServletRequest request, @PathVariable int postId, @RequestBody CreateCommentRequestDto requestDto) {
-        String token = jwtProvider.getTokenFromRequest(request);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "댓글을 등록했습니다.", commentService.createComment(token, postId, requestDto)));
+                .body(ApiResponse.success(201, "댓글을 등록했습니다.", commentService.createComment(request, postId, requestDto)));
     }
 
 }

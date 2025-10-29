@@ -1,19 +1,18 @@
 package kr.kakao_tech_bootcamp.community.jwt;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import kr.kakao_tech_bootcamp.community.exception.RestApiException;
-import kr.kakao_tech_bootcamp.community.exception.error_code.JwtErrorCode;
-import kr.kakao_tech_bootcamp.community.exception.error_code.UserErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtProvider {
@@ -23,75 +22,46 @@ public class JwtProvider {
 
     private Key key;
 
+    // spring이 @Value 주입 끝낸 후 키 생성
     @PostConstruct
-    protected void init() {
-        this.key = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
+    public void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secretKeyString);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // 30분짜리 Access Token
-    private final long accessTokenValidity = 1000L * 60 * 30;
-
-    // 토큰 생성
-    public String generateAccessToken(int userId) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + accessTokenValidity);
+    // access token 생성
+    public String generateAccessToken(int userId, String role) {
+        long accessTtlSeconds = 5*60;   // 5분
 
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))             // 유저 식별자
-                .setIssuedAt(now)               // 발급 시각
-                .setExpiration(expiry)          // 만료 시각
-                .signWith(key)                  // 서명 (비밀키 기반)
-                .compact();                     // 문자열 형태로 반환
+                .setSubject(String.valueOf(userId))                                             // 유저 식별자
+                .claim("role", role)
+                .setIssuedAt(new Date())                                                        // 발급 시각
+                .setExpiration(Date.from(Instant.now().plusSeconds(accessTtlSeconds)))          // 만료 시각
+                .signWith(key, SignatureAlgorithm.HS256)                                                                  // 서명 (비밀키 기반)
+                .compact();                                                                     // 문자열 형태로 반환
     }
 
-    // 만료 여부 검증
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true; // 유효한 토큰
-        } catch (Exception e) {
-            return false; // 서명 위조, 만료 등
-        }
+    // 서명, 만료 검증하고 payload 반환
+    public Jws<Claims> parse(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
 
-    public String getTokenFromRequest(HttpServletRequest request) {
-        // 헤더에서 토큰 찾기
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
-        }
-
-        // 쿠키에서 토큰 찾기
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("accessToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-
-        return null;
+    // refresh token 생성
+    public String generateRefreshToken(int userId) {
+        long refreshTtlSeconds = 7L*24*3600;    // 7일;
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .setId(UUID.randomUUID().toString())
+                .setIssuedAt(new Date())
+                .setExpiration(Date.from(Instant.now().plusSeconds(refreshTtlSeconds)))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    // 토큰에서 이메일 뽑기
-    public Integer getIdFromToken(String token) {
-        if (token == null || token.isBlank()) {
-            throw new RestApiException(JwtErrorCode.TOKEN_MISSING);
-        }
-
-        try {
-            return Integer.parseInt(Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject());
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            throw new RestApiException(JwtErrorCode.TOKEN_EXPIRED);
-        } catch (io.jsonwebtoken.MalformedJwtException e) {
-            throw new RestApiException(JwtErrorCode.TOKEN_MALFORMED);
-        } catch (Exception e) {
-            throw new RestApiException(JwtErrorCode.TOKEN_INVALID);
-        }
+    // 토큰에서 userId 추출
+    public int getIdFromToken(String token) {
+        var jws = parse(token);
+        return Integer.parseInt(jws.getBody().getSubject());
     }
 }
