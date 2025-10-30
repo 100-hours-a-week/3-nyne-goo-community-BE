@@ -1,5 +1,7 @@
 package kr.kakao_tech_bootcamp.community.repositoryImpl;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -11,9 +13,11 @@ import kr.kakao_tech_bootcamp.community.entity.PostImage;
 import kr.kakao_tech_bootcamp.community.repository.post.PostImageRepository;
 import kr.kakao_tech_bootcamp.community.repository.post.PostQueryRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -34,6 +38,17 @@ public class PostRepositoryImpl implements PostQueryRepository {
 
     @Override
     public Slice<AllPostResponseDto> getAllPosts(int userId, Pageable pageable) {
+        List<OrderSpecifier> orders = new ArrayList<>();
+        for(Sort.Order order : pageable.getSort()) {
+            Order sortOrder= order.isAscending()? Order.ASC:Order.DESC;
+
+            switch(order.getProperty()) {
+                case "createdAt" -> orders.add(new OrderSpecifier<>(sortOrder, post.createdAt));
+                case "likesCount" -> orders.add(new OrderSpecifier<>(sortOrder, post.likesCount));
+                default -> orders.add(new OrderSpecifier<>(Order.DESC, post.createdAt));
+            }
+        }
+
         List<AllPostResponseDto> allPostResponseList = jpaQueryFactory
                 .select(Projections.constructor(AllPostResponseDto.class,
                         post.id,
@@ -58,11 +73,12 @@ public class PostRepositoryImpl implements PostQueryRepository {
                                         .otherwise(false).as("mine"))
                 ))
                 .from(post)
+                .where(post.user.deletedAt.isNull())        // 삭제되지 않은 사용자의 게시글만 불러오기
                 .join(post.user, user)
                 .leftJoin(postLike)     // 좋아요 안누른 게시글도 조회해야함
                 .on(postLike.post.eq(post)                  // 좋아요 누른 사람이 현재 로그인한 사람인지 확인
                         .and(postLike.user.id.eq(userId)))
-                .orderBy(post.createdAt.desc())
+                .orderBy(orders.toArray(OrderSpecifier[]::new))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();

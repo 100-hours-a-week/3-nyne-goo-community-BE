@@ -28,7 +28,6 @@ public class PostReadController {
     public ResponseEntity<ApiResponse<Slice<AllPostResponseDto>>> getAllPosts(
             HttpServletRequest request,
             @ParameterObject
-            @PageableDefault(size = 10, sort = "createdAt")
             Pageable pageable){
         Slice<AllPostResponseDto> postSlice= postService.getAllPosts(request, pageable);
 

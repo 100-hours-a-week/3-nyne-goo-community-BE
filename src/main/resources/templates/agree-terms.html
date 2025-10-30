@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>약관 동의 | 아무말 대잔치</title>
+    <link rel="stylesheet" th:href="@{/css/agree-terms.css}" />
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+</head>
+<body>
+<div id="wrap">
+    <div class="container">
+        <h2 class="title">약관 동의</h2>
+        <p class="desc">서비스 이용을 위해 아래 약관에 동의해주세요.</p>
+
+        <!-- 전체 동의 -->
+        <div class="term-item all-agree">
+            <div class="term-header">
+                <input type="checkbox" id="agreeAll" />
+                <label for="agreeAll"><strong>[전체 동의]</strong> 모든 약관에 동의합니다.</label>
+            </div>
+        </div>
+
+        <div class="terms-box">
+            <!-- 이용약관 -->
+            <div class="term-item">
+                <div class="term-header">
+                    <input type="checkbox" id="agreeTerms" />
+                    <label for="agreeTerms"><strong>[필수]</strong> 이용약관 동의</label>
+                </div>
+                <div class="term-content">
+            <textarea readonly>
+제1조(목적)
+이 약관은 "아무말 대잔치"(이하 "회사")가 제공하는 모든 서비스의 이용 조건 및 절차, 회원과 회사의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
+
+제2조(용어의 정의)
+① "서비스"란 회사가 제공하는 커뮤니티, 게시물 작성, 댓글 등 회원 간 상호작용이 가능한 온라인 서비스를 의미합니다.
+② "회원"이란 본 약관에 동의하고 회사와 이용계약을 체결하여 서비스를 이용하는 자를 말합니다.
+
+제3조(약관의 효력 및 변경)
+① 본 약관은 회원이 동의함으로써 효력이 발생합니다.
+② 회사는 관련 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있으며, 변경 시 공지합니다.
+
+제4조(회원의 의무)
+① 회원은 관계법령, 본 약관 및 이용안내 등을 준수하여야 합니다.
+② 회원은 자신의 계정 정보를 제3자에게 제공하거나 공유해서는 안 됩니다.
+
+제5조(서비스의 제공 및 중단)
+① 회사는 지속적이고 안정적인 서비스를 제공하기 위해 노력합니다.
+② 다만, 시스템 점검, 천재지변 등 불가피한 사유가 있을 경우 서비스 제공이 일시 중단될 수 있습니다.
+
+제6조(게시물의 관리)
+회원이 게시한 게시물의 책임은 회원 본인에게 있으며, 법령에 위반되거나 공서양속에 반하는 게시물은 사전 통보 없이 삭제될 수 있습니다.
+            </textarea>
+                </div>
+            </div>
+
+            <!-- 개인정보처리방침 -->
+            <div class="term-item">
+                <div class="term-header">
+                    <input type="checkbox" id="agreePrivacy" />
+                    <label for="agreePrivacy"><strong>[필수]</strong> 개인정보처리방침 동의</label>
+                </div>
+                <div class="term-content">
+            <textarea readonly>
+1. 수집하는 개인정보의 항목
+회사는 회원가입 시 다음의 정보를 수집합니다.
+- 필수항목: 이메일, 비밀번호, 닉네임
+- 선택항목: 프로필 이미지
+
+2. 개인정보의 수집 및 이용 목적
+회사는 수집한 개인정보를 다음의 목적을 위해 이용합니다.
+- 회원 식별 및 본인 확인
+- 서비스 제공 및 이용 통계 분석
+- 고객 문의 응대 및 공지사항 전달
+
+3. 개인정보의 보유 및 이용기간
+회원 탈퇴 시 지체 없이 모든 개인정보를 파기합니다.
+단, 관련 법령에 따라 일정 기간 보존이 필요한 경우 해당 기간 동안 보관합니다.
+
+4. 개인정보의 제3자 제공
+회사는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다.
+단, 법령에 따라 필요한 경우에 한해 제공할 수 있습니다.
+
+5. 개인정보의 보호
+회사는 회원의 개인정보를 안전하게 관리하기 위해 암호화, 접근권한 제한 등 기술적·관리적 보호조치를 시행합니다.
+            </textarea>
+                </div>
+            </div>
+        </div>
+
+        <button id="nextBtn" class="next-btn" disabled>다음</button>
+    </div>
+</div>
+
+<script>
+    const agreeAll = document.getElementById("agreeAll");
+    const agreeTerms = document.getElementById("agreeTerms");
+    const agreePrivacy = document.getElementById("agreePrivacy");
+    const nextBtn = document.getElementById("nextBtn");
+
+    agreeAll.addEventListener("change", () => {
+        const checked = agreeAll.checked;
+        agreeTerms.checked = checked;
+        agreePrivacy.checked = checked;
+        updateNext();
+    });
+
+    [agreeTerms, agreePrivacy].forEach(chk =>
+        chk.addEventListener("change", () => {
+            agreeAll.checked = agreeTerms.checked && agreePrivacy.checked;
+            updateNext();
+        })
+    );
+
+    function updateNext() {
+        if (agreeTerms.checked && agreePrivacy.checked) {
+            nextBtn.disabled = false;
+            nextBtn.classList.add("active");
+        } else {
+            nextBtn.disabled = true;
+            nextBtn.classList.remove("active");
+        }
+    }
+
+    nextBtn.addEventListener("click", () => {
+        if (!nextBtn.disabled) {
+            window.location.href = "http://localhost:3000/signup";
+        }
+    });
+</script>
+</body>
+</html>

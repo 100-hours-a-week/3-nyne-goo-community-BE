@@ -1,0 +1,132 @@
+/* ===== 기본 설정 ===== */
+body {
+    font-family: "Noto Sans KR", sans-serif;
+    background-color: #F6F7FA; /* ✅ 회색끼 있는 아이보리 */
+    margin: 0;
+    padding: 0;
+}
+
+#wrap {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 720px;
+    background: #fff;
+    margin: 80px auto;
+    padding: 48px 40px;
+    border-radius: 20px;
+    border: 2px solid #B6BCE2; /* ✅ 라벤더 테두리 */
+    box-shadow: 0 4px 16px rgba(47, 49, 107, 0.08);
+    box-sizing: border-box;
+}
+
+/* 제목 영역 */
+.title {
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    color: #2F316B; /* ✅ 네이비 포인트 */
+    margin-bottom: 12px;
+}
+
+.desc {
+    font-size: 15px;
+    text-align: center;
+    color: #555;
+    margin-bottom: 28px;
+}
+
+/* 약관 항목 공통 */
+.term-item {
+    margin-bottom: 26px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #E0E3ED; /* ✅ 은은한 블루톤 구분선 */
+}
+
+.term-item:last-child {
+    border-bottom: none;
+}
+
+/* 체크박스 헤더 */
+.term-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.term-header label {
+    font-size: 15px;
+    color: #2F316B;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* 전체 동의 */
+.all-agree {
+    padding: 10px 2px;
+    border-radius: 8px;
+    transition: background-color 0.25s ease;
+}
+
+.all-agree:hover {
+    background-color: #F0F2F9; /* ✅ hover 시 라벤더 화이트 */
+}
+
+/* 약관 본문 */
+.term-content textarea {
+    width: 100%;
+    height: 180px;
+    border: 1px solid #B6BCE2; /* ✅ 라벤더 라인 */
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #333;
+    resize: none;
+    background-color: #fff; /* ✅ 입력부 배경 통일 (핑크 제거) */
+    overflow-y: scroll;
+    white-space: pre-line;
+    box-sizing: border-box;
+}
+
+.term-content textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+.term-content textarea::-webkit-scrollbar-thumb {
+    background-color: #B6BCE2; /* ✅ 라벤더 스크롤 */
+    border-radius: 4px;
+}
+
+/* 버튼 */
+.next-btn {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    background-color: #ccc;
+    color: #444;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: not-allowed;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-top: 12px;
+}
+
+.next-btn.active {
+    background-color: #2F316B; /* ✅ 메인 네이비 */
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(47, 49, 107, 0.25);
+}
+
+.next-btn.active:hover {
+    background-color: #7D84C3; /* ✅ hover 시 연보라빛 */
+    transform: translateY(-1px);
+}
