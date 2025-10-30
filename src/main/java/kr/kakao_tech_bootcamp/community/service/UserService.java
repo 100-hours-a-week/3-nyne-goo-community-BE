@@ -98,6 +98,8 @@ public class UserService {
             throw new RestApiException(CommonErrorCode.CONFLICT);
         }
 
+        user.setNickname(nickname);
+
         if (image != null) {
             String imageName = image.getOriginalFilename();
             String ext = imageName.substring(imageName.lastIndexOf("."));

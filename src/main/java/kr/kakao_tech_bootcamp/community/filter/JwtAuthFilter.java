@@ -21,9 +21,9 @@ import java.util.Optional;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
-    // 필터 제외 경로 목록 (로그인, 회원가입)
+    // 필터 제외 경로 목록 (로그인, 회원가입, 약관 동의)
     private static final String[] EXCLUDED_PATHS = {
-            "/login", "/signup"
+            "/login", "/signup", "/terms", "/error"
     };
 
     // 필터 제외 경로 설정
