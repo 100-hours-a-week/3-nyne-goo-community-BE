@@ -55,4 +55,8 @@ public class Post {
     public void setId(int id) {
         this.id = id;
     }
+
+    public void deletePost() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

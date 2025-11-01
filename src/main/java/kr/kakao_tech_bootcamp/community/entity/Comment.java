@@ -40,4 +40,8 @@ public class Comment {
         this.user = user;
         this.post = post;
     }
+
+    public void deleteComment(){
+        this.deletedAt = LocalDateTime.now();
+    }
 }

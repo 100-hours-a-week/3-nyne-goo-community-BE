@@ -35,10 +35,10 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))                                             // 유저 식별자
-                .claim("role", role)
+                .claim("role", role)                                                         // USER, ADMIN과 같은 사용자 권한 정보 (현재는 USER만 존재)
                 .setIssuedAt(new Date())                                                        // 발급 시각
                 .setExpiration(Date.from(Instant.now().plusSeconds(accessTtlSeconds)))          // 만료 시각
-                .signWith(key, SignatureAlgorithm.HS256)                                                                  // 서명 (비밀키 기반)
+                .signWith(key, SignatureAlgorithm.HS256)                                        // 서명 (비밀키 기반)
                 .compact();                                                                     // 문자열 형태로 반환
     }
 

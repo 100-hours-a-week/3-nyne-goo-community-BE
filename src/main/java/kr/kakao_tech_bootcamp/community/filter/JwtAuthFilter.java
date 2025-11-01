@@ -21,9 +21,9 @@ import java.util.Optional;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
-    // 필터 제외 경로 목록 (로그인, 회원가입, 약관 동의)
+    // 필터 제외 경로 목록 (약관 동의)
     private static final String[] EXCLUDED_PATHS = {
-            "/login", "/signup", "/terms", "/error"
+            "/terms"
     };
 
     // 필터 제외 경로 설정
@@ -40,15 +40,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain chain
     ) throws IOException, ServletException {
-        boolean isHome = isHomeRequest(request);
         Optional<String> token = extractToken(request);
 
-        // 토큰 없으면 home 요청 시 login 으로 리다이렉트
+        // 토큰 없으면
         if (token.isEmpty()) {
-            if (isHome) {
-                response.sendRedirect("/login");
-                return;
-            }
+            // 다음 필터나 컨트롤러로 요청 넘김
             chain.doFilter(request, response);
             return;
         }
@@ -61,12 +57,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(request, response);
-    }
-
-    // home 요청인지 확인
-    private boolean isHomeRequest(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return "/".equals(uri) || "/home".equals(uri);
     }
 
     // 토큰 추출 (헤더 우선, 쿠키 다음)

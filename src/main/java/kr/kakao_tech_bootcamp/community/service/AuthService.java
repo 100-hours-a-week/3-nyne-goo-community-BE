@@ -69,7 +69,7 @@ public class AuthService {
         var parsedRefreshToken = jwtProvider.parse(refreshToken);
 
         // 저장된 refreshToken 찾아서 entity에 저장
-        RefreshToken entity = refreshTokenRepository.findByRefreshTokenAndRevokedFalse(refreshToken).orElseThrow(()->new RestApiException(CommonErrorCode.UNAUTHORIZED));
+        RefreshToken entity = refreshTokenRepository.findByRefreshToken(refreshToken).orElseThrow(()->new RestApiException(CommonErrorCode.UNAUTHORIZED));
 
         if(entity.getExpiresAt().isBefore(Instant.now())) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
 
