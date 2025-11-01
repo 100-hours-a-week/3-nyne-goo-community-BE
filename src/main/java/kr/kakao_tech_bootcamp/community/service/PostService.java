@@ -19,6 +19,7 @@ import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -41,18 +43,26 @@ public class PostService {
     private final PostLikeCountManager postLikeCountManager;
 
     public Slice<AllPostResponseDto> getAllPosts(HttpServletRequest request, Pageable pageable) {
-        Slice<AllPostResponseDto> allPosts = postRepository.getAllPosts(authHelper.findUserFromRequest(request).getId(), pageable);
+        int userId = authHelper.findUserFromRequest(request).getId();
+        Slice<AllPostResponseDto> allPosts = postRepository.getAllPosts(userId, pageable);
 
-        allPosts.getContent().forEach(allPostResponseDto -> {
-            int postId = allPostResponseDto.getPostId();
+        // DB에서 가져온 값들 중 postId만 따로 뽑아 리스트로 저장
+        List<Integer> postIds = allPosts.getContent().stream().map(AllPostResponseDto::getPostId).toList();
+        // 매니저에서 저장된 수들 가져옴
+        Map<Integer, Integer> like = postLikeCountManager.getAllPostLikeCount();
+        Map<Integer, Integer> view = postViewCountManager.getAllPostViewCount();
+        Map<Integer, Integer> comment = postCommentCountManager.getAllCommentsCount();
 
-            allPostResponseDto.setViewsCount(allPostResponseDto.getViewsCount()+postViewCountManager.getPostViewCount(postId));
-            allPostResponseDto.setCommentsCount(allPostResponseDto.getCommentsCount()+postCommentCountManager.getPostCommentCount(postId));
-            allPostResponseDto.setLikesCount(allPostResponseDto.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
-        });
+        // DB에서 가져온 값과 매니저에 저장된 값 더해서 새 객체로 리스트에 저장
+        List<AllPostResponseDto> allPostResponseDtoList = allPosts.getContent().stream().map(posts -> {
+            int likeCount = posts.getLikesCount()+like.getOrDefault(posts.getPostId(), 0);
+            int commentCount = posts.getCommentsCount() + comment.getOrDefault(posts.getPostId(), 0);
+            int viewCount = posts.getViewsCount()+view.getOrDefault(posts.getPostId(), 0);
 
-        System.out.println("PostComentCountManager(get): "+postCommentCountManager.hashCode());
-        return allPosts;
+            return AllPostResponseDto.plusCounts(posts, likeCount, commentCount, viewCount);
+        }).toList();
+
+        return new SliceImpl<>(allPostResponseDtoList, pageable, allPosts.hasNext());
     }
 
     public CreatePostResponseDto createPost(HttpServletRequest request, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
@@ -72,16 +82,16 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public GetPostDetailResponseDto getPostDetail(HttpServletRequest request, int postId) {
-        GetPostDetailResponseDto getPostDetailResponseDto = postRepository.getPostByPostId(authHelper.findUserFromRequest(request).getId(), postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
+        int userId = authHelper.findUserFromRequest(request).getId();
+        GetPostDetailResponseDto postDetail = postRepository.getPostByPostId(userId, postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
 
         postViewCountManager.increaseViewCount(postId);
 
-        getPostDetailResponseDto.setViewsCount(getPostDetailResponseDto.getViewsCount()+postViewCountManager.getPostViewCount(postId));
-        getPostDetailResponseDto.setCommentsCount(getPostDetailResponseDto.getCommentsCount()+postCommentCountManager.getPostCommentCount(postId));
-        getPostDetailResponseDto.setLikesCount(getPostDetailResponseDto.getLikesCount()+postLikeCountManager.getPostLikeCount(postId));
+        int likeCount = postLikeCountManager.getPostLikeCount(postId);
+        int commentCount = postCommentCountManager.getPostCommentCount(postId);
+        int viewCount = postViewCountManager.getPostViewCount(postId);
 
-
-        return getPostDetailResponseDto;
+        return postDetail.plusCounts(likeCount, commentCount, viewCount);
     }
 
     public void updatePost(HttpServletRequest request, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
@@ -89,11 +99,13 @@ public class PostService {
         if(updatePostRequestDto.getContent().isEmpty() || updatePostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
+        User user = authHelper.findUserFromRequest(request);
 
-        if (!post.getUser().equals(authHelper.findUserFromRequest(request))) throw new RestApiException(CommonErrorCode.FORBIDDEN);
+        if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         post.setTitle(updatePostRequestDto.getTitle());
         post.setContent(updatePostRequestDto.getContent());
+        post.setUpdatedAt();
 
         for (PostImage prevImage : post.getImages()) {
             Path path = Paths.get(System.getProperty("user.dir") + "/uploads/" + prevImage.getImageUUID());
@@ -114,8 +126,9 @@ public class PostService {
 
     public void deletePost(HttpServletRequest request, int postId) {
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
+        User user = authHelper.findUserFromRequest(request);
 
-        if (!post.getUser().equals(authHelper.findUserFromRequest(request))) throw new RestApiException(CommonErrorCode.FORBIDDEN);
+        if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         if(post.getDeletedAt()!=null) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
 

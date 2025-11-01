@@ -5,13 +5,11 @@ import jakarta.persistence.Table;
 import kr.kakao_tech_bootcamp.community.UserStatus;
 import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET status = 'DELETED', deleted_at = NOW() WHERE id = ?")
@@ -56,6 +54,19 @@ public class User {
 
         this.imageUUID = imageUUID;
         this.imageName = imageName;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void setImage(String imageUUID, String imageName) {
+        this.imageUUID = imageUUID;
+        this.imageName = imageName;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void deleteUser(){

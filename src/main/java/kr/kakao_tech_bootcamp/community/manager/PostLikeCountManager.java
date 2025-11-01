@@ -3,6 +3,9 @@ package kr.kakao_tech_bootcamp.community.manager;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
@@ -19,8 +22,12 @@ public class PostLikeCountManager {
         postLikeCountMap.put(postId, count == 0 ? 0 : count - 1);
     }
 
-    public int  getPostLikeCount(int postId) {
+    public int getPostLikeCount(int postId) {
         return postLikeCountMap.getOrDefault(postId, 0);
+    }
+
+    public Map<Integer, Integer> getAllPostLikeCount() {
+        return postLikeCountMap;
     }
 
     public void clear(){

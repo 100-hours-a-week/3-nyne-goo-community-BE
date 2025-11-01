@@ -12,17 +12,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@OpenAPIDefinition(
-        info = @Info(title = "Community API", version = "v1"),
-        security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")} // 전체 api에 적용
-)
-@SecurityScheme(
-        name = "bearerAuth",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT"
-)
-
 // 스웨거 설정
 public class SwaggerConfig {
     @Bean

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "posts")
 @SQLDelete(sql = "UPDATE posts SET deleted_at = NOW() WHERE id = ?")
@@ -52,10 +50,17 @@ public class Post {
         this.user = user;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
     public void deletePost() {
         this.deletedAt = LocalDateTime.now();
     }

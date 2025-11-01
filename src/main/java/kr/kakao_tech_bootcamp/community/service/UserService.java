@@ -105,9 +105,7 @@ public class UserService {
             String ext = imageName.substring(imageName.lastIndexOf("."));
             String imageUUID = UUID.randomUUID() + ext;
 
-            user.setImageUUID(imageUUID);
-            user.setImageName(imageName);
-
+            user.setImage(imageUUID, imageName);
             String uploadDir = System.getProperty("user.dir") + "/uploads/";
 
             try {

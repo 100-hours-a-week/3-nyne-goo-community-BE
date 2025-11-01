@@ -8,7 +8,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter
+@Getter
 @Entity
 @Table(name="comments")
 @SQLDelete(sql = "UPDATE comments SET deleted_at = NOW() WHERE id = ? ")
@@ -39,6 +39,10 @@ public class Comment {
         this.createdAt = LocalDateTime.now();
         this.user = user;
         this.post = post;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public void deleteComment(){

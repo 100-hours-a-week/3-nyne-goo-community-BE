@@ -3,6 +3,7 @@ package kr.kakao_tech_bootcamp.community.manager;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
@@ -16,6 +17,10 @@ public class PostViewCountManager {
 
     public int getPostViewCount(int postId) {
         return postViewCountMap.getOrDefault(postId, 0);
+    }
+
+    public Map<Integer, Integer> getAllPostViewCount() {
+        return postViewCountMap;
     }
 
     public void clear(){

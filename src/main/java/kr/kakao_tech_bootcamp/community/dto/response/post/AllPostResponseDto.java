@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.dto.response.post;
 
+import kr.kakao_tech_bootcamp.community.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +9,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 public class AllPostResponseDto {
@@ -22,5 +22,14 @@ public class AllPostResponseDto {
     private boolean isLike;
     private Author author;
 
+    public static AllPostResponseDto plusCounts(AllPostResponseDto post, int likesCount, int commentsCount, int viewsCount) {
+        int like = post.getLikesCount()+likesCount;
+        int comments = post.getCommentsCount()+commentsCount;
+        int views = post.getViewsCount()+viewsCount;
 
+        return new AllPostResponseDto(
+                post.getPostId(), post.getTitle(), post.getCreatedAt(), post.getUpdatedAt(),
+                like, comments, views, post.isLike(), post.getAuthor()
+        );
+    }
 }
