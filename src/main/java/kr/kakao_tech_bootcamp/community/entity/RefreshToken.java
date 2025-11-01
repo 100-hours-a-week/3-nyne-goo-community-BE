@@ -20,16 +20,14 @@ public class RefreshToken {
     private String refreshToken;
 
     private Instant expiresAt;
-    private boolean revoked;
 
-    public RefreshToken(int userId, String refreshToken, Instant expiresAt, boolean revoked) {
+    public RefreshToken(int userId, String refreshToken, Instant expiresAt) {
         this.userId = userId;
         this.refreshToken = refreshToken;
         this.expiresAt = expiresAt;
-        this.revoked = revoked;
     }
 
-    public static RefreshToken of(int userId, String refreshToken, Instant expiresAt, boolean revoked) {
-        return new RefreshToken(userId, refreshToken, expiresAt, revoked);
+    public static RefreshToken of(int userId, String refreshToken, Instant expiresAt) {
+        return new RefreshToken(userId, refreshToken, expiresAt);
     }
 }

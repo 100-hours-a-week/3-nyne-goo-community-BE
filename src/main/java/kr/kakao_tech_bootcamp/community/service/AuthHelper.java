@@ -28,11 +28,11 @@ public class AuthHelper {
 
     // accessToken, refreshToken 새로 발급
     protected TokenResponse generateAndSaveTokens(User user) {
-        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getNickname());
+        String accessToken = jwtProvider.generateAccessToken(user.getId(), "USER");
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
 
         // refresh token 저장
-        RefreshToken refreshEntity = RefreshToken.of(user.getId(), refreshToken, Instant.now().plusSeconds(REFRESH_TOKEN_EXPIRATION), false);
+        RefreshToken refreshEntity = RefreshToken.of(user.getId(), refreshToken, Instant.now().plusSeconds(REFRESH_TOKEN_EXPIRATION));
         refreshTokenRepository.save(refreshEntity);
 
         return new TokenResponse(accessToken, refreshToken);

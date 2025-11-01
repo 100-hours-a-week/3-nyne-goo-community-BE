@@ -119,6 +119,6 @@ public class PostService {
 
         if(post.getDeletedAt()!=null) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
 
-        postRepository.delete(post);
+        post.deletePost();
     }
 }

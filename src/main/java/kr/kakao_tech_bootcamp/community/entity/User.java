@@ -57,4 +57,9 @@ public class User {
         this.imageUUID = imageUUID;
         this.imageName = imageName;
     }
+
+    public void deleteUser(){
+        this.deletedAt = LocalDateTime.now();
+        this.userStatus = UserStatus.DELETED;
+    }
 }
