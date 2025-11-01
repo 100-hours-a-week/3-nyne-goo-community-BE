@@ -3,6 +3,7 @@ package kr.kakao_tech_bootcamp.community.manager;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
@@ -21,6 +22,10 @@ public class PostCommentCountManager {
 
     public int getPostCommentCount(int postId) {
         return postCommentCountMap.getOrDefault(postId, 0);
+    }
+
+    public Map<Integer, Integer> getAllCommentsCount() {
+        return postCommentCountMap;
     }
 
     public void clear(){

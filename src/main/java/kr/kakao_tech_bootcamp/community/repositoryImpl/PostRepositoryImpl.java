@@ -134,7 +134,7 @@ public class PostRepositoryImpl implements PostQueryRepository {
                 imageList.add(imageResponseDto);
             }
 
-            getPostDetailResponseDto.setImageList(imageList);
+            getPostDetailResponseDto = getPostDetailResponseDto.withImages(imageList);
         }
 
         return Optional.ofNullable(getPostDetailResponseDto);   // null일 때 빈 optional 반환

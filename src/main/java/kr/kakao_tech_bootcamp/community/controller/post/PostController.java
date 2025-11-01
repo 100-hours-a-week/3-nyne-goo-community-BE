@@ -6,11 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.request.post.CreatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.post.UpdatePostRequestDto;
+import kr.kakao_tech_bootcamp.community.dto.response.post.AllPostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.CreatePostResponseDto;
-import kr.kakao_tech_bootcamp.community.entity.Post;
-import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
+import kr.kakao_tech_bootcamp.community.dto.response.post.GetPostDetailResponseDto;
 import kr.kakao_tech_bootcamp.community.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +25,30 @@ import java.util.List;
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
-public class PostWriteController {
+public class PostController {
     private final PostService postService;
+
+    @GetMapping
+    @Operation(summary = "모든 게시글 조회")
+    public ResponseEntity<ApiResponse<Slice<AllPostResponseDto>>> getAllPosts(
+            HttpServletRequest request,
+            @ParameterObject
+            Pageable pageable){
+        Slice<AllPostResponseDto> postSlice= postService.getAllPosts(request, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(200, "게시글 전체 조회에 성공했습니다.", postSlice));
+    }
+
+    @GetMapping( "/{postId}")
+    @Operation(summary = "게시글 조회", security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<ApiResponse<GetPostDetailResponseDto>> getPost(
+            HttpServletRequest request,
+            @PathVariable int postId
+    ){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(200, "게시글을 성공적으로 조회했습니다.", postService.getPostDetail(request, postId)));
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "게시글 생성", security = {@SecurityRequirement(name = "bearerAuth")})
