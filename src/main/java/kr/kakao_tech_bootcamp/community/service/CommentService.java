@@ -78,8 +78,7 @@ public class CommentService {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
-        commentRepository.delete(comment);
-
+        comment.deleteComment();
         postCommentCountManager.decreaseComment(comment.getPost().getId());
     }
 }

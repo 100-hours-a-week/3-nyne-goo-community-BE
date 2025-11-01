@@ -150,7 +150,7 @@ public class UserService {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST );
         }
 
-        userRepository.delete(user);
+        user.deleteUser();
 
         authHelper.addTokenCookie(response, "accessToken", null, 0);
         authHelper.addTokenCookie(response, "refreshToken", null, 0);
