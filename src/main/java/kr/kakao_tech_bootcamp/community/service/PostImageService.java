@@ -24,24 +24,19 @@ import java.util.UUID;
 public class PostImageService {
     private final PostImageRepository postImageRepository;
 
+    // 이미지 추가
     public List<PostImage> createPostImages(List<MultipartFile> imageList, Post post) {
         List<PostImage> postImageList = new ArrayList<>();
-
         if(imageList == null) return postImageList;
 
+        // 이미지 리스트에서 이미지 하나씩 꺼내와 이름과 UUID+확장자 저장
         for(int i=0; i<imageList.size();i++){
             MultipartFile image = imageList.get(i);
             String imageName = image.getOriginalFilename();
             String ext = imageName.substring(imageName.lastIndexOf("."));
             String imageUUID = UUID.randomUUID() + ext;
 
-            PostImage postImage = new PostImage(
-                    imageUUID,
-                    imageName,
-                    i,
-                    post
-            );
-
+            PostImage postImage = new PostImage(imageUUID, imageName, i, post);
             postImageList.add(postImage);
 
             String uploadDir = System.getProperty("user.dir") + "/uploads/";

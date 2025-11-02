@@ -21,6 +21,7 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthService {
 
     private final JwtProvider jwtProvider;
@@ -29,7 +30,6 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     // 로그인
-    @Transactional
     public void login(HttpServletResponse response, LoginRequestDto request) {
         // 이메일 확인
         User user = userRepository.findByActiveEmail(request.getEmail())
@@ -51,7 +51,6 @@ public class AuthService {
     }
 
     // 로그아웃
-    @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         // DB에서 userId 에 해당하는 refreshToken 모두 삭제
         refreshTokenRepository.deleteByUserId(authHelper.findUserFromRequest(request).getId());

@@ -45,6 +45,11 @@ public class Comment {
         this.content = content;
     }
 
+    public void updateContent(String content) {
+        this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void deleteComment(){
         this.deletedAt = LocalDateTime.now();
     }

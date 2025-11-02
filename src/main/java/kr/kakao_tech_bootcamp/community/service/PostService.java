@@ -42,12 +42,13 @@ public class PostService {
     private final PostCommentCountManager postCommentCountManager;
     private final PostLikeCountManager postLikeCountManager;
 
+    // 모든 게시글 조회
+    @Transactional(readOnly = true)
     public Slice<AllPostResponseDto> getAllPosts(HttpServletRequest request, Pageable pageable) {
         int userId = authHelper.findUserFromRequest(request).getId();
+        // DB에서 모든 게시글 받아옴
         Slice<AllPostResponseDto> allPosts = postRepository.getAllPosts(userId, pageable);
 
-        // DB에서 가져온 값들 중 postId만 따로 뽑아 리스트로 저장
-        List<Integer> postIds = allPosts.getContent().stream().map(AllPostResponseDto::getPostId).toList();
         // 매니저에서 저장된 수들 가져옴
         Map<Integer, Integer> like = postLikeCountManager.getAllPostLikeCount();
         Map<Integer, Integer> view = postViewCountManager.getAllPostViewCount();
@@ -65,7 +66,9 @@ public class PostService {
         return new SliceImpl<>(allPostResponseDtoList, pageable, allPosts.hasNext());
     }
 
+    // 게시글 생성
     public CreatePostResponseDto createPost(HttpServletRequest request, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+        // 제목, 내용 길이 확인
         if(createPostRequestDto.getTitle().isEmpty() || createPostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
         if(createPostRequestDto.getContent().isEmpty() || createPostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
@@ -80,6 +83,7 @@ public class PostService {
         return CreatePostResponseDto.from(postRepository.save(post));
     }
 
+    // 게시글 상세 조회
     @Transactional(readOnly = true)
     public GetPostDetailResponseDto getPostDetail(HttpServletRequest request, int postId) {
         int userId = authHelper.findUserFromRequest(request).getId();
@@ -91,22 +95,27 @@ public class PostService {
         int commentCount = postCommentCountManager.getPostCommentCount(postId);
         int viewCount = postViewCountManager.getPostViewCount(postId);
 
+        // 매니저에서 가져온 좋아요수, 댓글수, 조회수를 더해서 반환
         return postDetail.plusCounts(likeCount, commentCount, viewCount);
     }
 
+    // 게시글 수정
     public void updatePost(HttpServletRequest request, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
+        // 제목, 내용 길이 확인
         if(updatePostRequestDto.getTitle().isEmpty() || updatePostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
         if(updatePostRequestDto.getContent().isEmpty() || updatePostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
         User user = authHelper.findUserFromRequest(request);
 
+        // 게시글 작성자와 수정하려는 사람이 다르면 forbidden 예외 처리
         if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         post.setTitle(updatePostRequestDto.getTitle());
         post.setContent(updatePostRequestDto.getContent());
         post.setUpdatedAt();
 
+        // 기존에 저장된 이미지 리스트 삭제
         for (PostImage prevImage : post.getImages()) {
             Path path = Paths.get(System.getProperty("user.dir") + "/uploads/" + prevImage.getImageUUID());
             try {
@@ -116,14 +125,16 @@ public class PostService {
                 throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
             }
         }
-
         post.getImages().clear();
+
+        // 이미지 리스트 새로 저장
         List<PostImage> postImageList = postImageService.createPostImages(imageList, post);
         post.getImages().addAll(postImageList);
 
         postRepository.save(post);
     }
 
+    // 게시글 삭제
     public void deletePost(HttpServletRequest request, int postId) {
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
         User user = authHelper.findUserFromRequest(request);
