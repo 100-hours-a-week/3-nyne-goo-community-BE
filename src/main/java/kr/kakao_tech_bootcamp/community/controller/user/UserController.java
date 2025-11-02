@@ -45,7 +45,7 @@ public class UserController {
     @Operation(summary = "회원탈퇴", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request, HttpServletResponse response) {
         int userId = jwtProvider.extractUserIdFromRequest(request);
-        userService.delete(userId, response);
+        userService.delete(userId);
         cookieUtil.deleteTokenCookies(response);        // 쿠키에서 토큰 삭제
         return ResponseEntity.ok(ApiResponse.success(200, "회원탈퇴에 성공했습니다."));
     }

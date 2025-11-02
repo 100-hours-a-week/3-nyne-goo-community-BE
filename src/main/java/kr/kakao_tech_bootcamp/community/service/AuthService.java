@@ -53,14 +53,14 @@ public class AuthService {
     }
 
     // 로그아웃
-    public void logout(int userId, HttpServletResponse response) {
+    public void logout(int userId) {
         // DB에서 userId 에 해당하는 refreshToken 모두 삭제
         refreshTokenRepository.deleteByUserId(userId);
     }
 
     // 토큰 재발급
     @Transactional
-    public TokenResponseDto tokenReissue(String refreshToken, HttpServletResponse response) {
+    public TokenResponseDto tokenReissue(String refreshToken) {
         if(refreshToken==null){
             throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
         }

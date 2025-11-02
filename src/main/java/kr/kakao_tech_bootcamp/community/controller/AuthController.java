@@ -37,7 +37,7 @@ public class AuthController {
     @Operation(summary = "로그아웃")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
         int userId = jwtProvider.extractUserIdFromRequest(request);
-        authService.logout(userId, response);
+        authService.logout(userId);
         cookieUtil.deleteTokenCookies(response);    // 쿠키에서 토큰 삭제
 
         return ResponseEntity.ok()
@@ -47,7 +47,7 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(summary="토큰 재발급")
     public ResponseEntity<ApiResponse<Void>> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
-        TokenResponseDto tokenResponseDto = authService.tokenReissue(refreshToken, response);
+        TokenResponseDto tokenResponseDto = authService.tokenReissue(refreshToken);
         cookieUtil.addTokenCookies(response, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken());
 
         return ResponseEntity.status(HttpStatus.CREATED)

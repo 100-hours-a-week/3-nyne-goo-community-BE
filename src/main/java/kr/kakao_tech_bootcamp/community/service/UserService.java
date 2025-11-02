@@ -149,7 +149,7 @@ public class UserService {
     }
 
     // 회원 삭제
-    public void delete(int userId, HttpServletResponse response) {
+    public void delete(int userId) {
         User user = userRepository.getReferenceById(userId);
 
         if (user.getUserStatus() == UserStatus.DELETED) {

@@ -65,12 +65,7 @@ public class JwtProvider {
                 .findFirst()
                 .orElseThrow(() -> new RestApiException(CommonErrorCode.UNAUTHORIZED));
 
-        return getIdFromToken(accessToken);
-    }
-
-    // 토큰에서 userId 추출
-    private int getIdFromToken(String token) {
-        var jws = parse(token);
+        var jws = parse(accessToken);
         return Integer.parseInt(jws.getBody().getSubject());
     }
 
