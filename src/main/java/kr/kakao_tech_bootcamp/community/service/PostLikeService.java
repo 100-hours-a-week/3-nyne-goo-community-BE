@@ -21,17 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class PostLikeService {
-    private final AuthHelper authHelper;
+    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostLikeCountManager postLikeCountManager;
 
     // 게시글 좋아요 등록
-    public PostLikeResponseDto createPostLike(HttpServletRequest request, int postId) {
-        User user = authHelper.findUserFromRequest(request);
+    public PostLikeResponseDto createPostLike(int userId, int postId) {
+        User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
-        if (postLikeRepository.existsByUserIdAndPostId(user.getId(), postId))
+        if (postLikeRepository.existsByUserIdAndPostId(userId, postId))
             throw new RestApiException(CommonErrorCode.CONFLICT);
 
         PostLike postLike = new PostLike(user, post);
@@ -44,16 +44,15 @@ public class PostLikeService {
     }
 
     // 게시글 좋아요 삭제
-    public PostLikeResponseDto deletePostLike(HttpServletRequest request, int postId) {
-        User user = authHelper.findUserFromRequest(request);
+    public PostLikeResponseDto deletePostLike(int userId, int postId) {
         Post post = postRepository.getReferenceById(postId);
 
-        if (!postLikeRepository.existsByUserIdAndPostId(user.getId(), postId))
+        if (!postLikeRepository.existsByUserIdAndPostId(userId, postId))
             throw new RestApiException(CommonErrorCode.CONFLICT);
 
         postLikeCountManager.decreaseLike(postId);
 
-        postLikeRepository.deleteByUserIdAndPostId(user.getId(), postId);
+        postLikeRepository.deleteByUserIdAndPostId(userId, postId);
 
         return PostLikeResponseDto.of(postId, post.getLikesCount() + postLikeCountManager.getPostLikeCount(postId));
     }

@@ -114,7 +114,8 @@ public class PostRepositoryImpl implements PostQueryRepository {
                                 user.nickname,
                                 new CaseBuilder()
                                         .when(post.user.id.eq(userId)).then(true)
-                                        .otherwise(false).as("mine"))
+                                        .otherwise(false).as("mine")
+                        )
                 ))
                 .from(post)
                 .join(post.user, user)

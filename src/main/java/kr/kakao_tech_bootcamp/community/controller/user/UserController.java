@@ -14,7 +14,9 @@ import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseD
 import kr.kakao_tech_bootcamp.community.dto.response.user.ExistCheckResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.GetMeResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.SignUpResponseDto;
+import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.service.UserService;
+import kr.kakao_tech_bootcamp.community.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final JwtProvider jwtProvider;
+    private final CookieUtil cookieUtil;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "회원가입")
@@ -40,7 +44,9 @@ public class UserController {
     @DeleteMapping
     @Operation(summary = "회원탈퇴", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request, HttpServletResponse response) {
-        userService.delete(request, response);
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        userService.delete(userId, response);
+        cookieUtil.deleteTokenCookies(response);        // 쿠키에서 토큰 삭제
         return ResponseEntity.ok(ApiResponse.success(200, "회원탈퇴에 성공했습니다."));
     }
 
@@ -63,8 +69,9 @@ public class UserController {
     @GetMapping
     @Operation(summary = "회원정보 조회")
     public ResponseEntity<ApiResponse<GetMeResponseDto>> getMe(HttpServletRequest request) {
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(200, "회원 정보를 성공적으로 조회했습니다.", userService.getMyInfo(request)));
+                .body(ApiResponse.success(200, "회원 정보를 성공적으로 조회했습니다.", userService.getMyInfo(userId)));
     }
 
     @PatchMapping( consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -73,7 +80,8 @@ public class UserController {
             HttpServletRequest request,
             @RequestParam String nickname,
             @RequestPart(value = "image", required = false) MultipartFile image){
-        userService.changeMyInfo(request, nickname, image);
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        userService.changeMyInfo(userId, nickname, image);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "회원 정보가 수정되었습니다."));
     }
@@ -81,15 +89,16 @@ public class UserController {
     @PostMapping(path = "/password")
     @Operation(summary = "비밀번호 확인", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<CheckPasswordResponseDto>>  checkPassword(HttpServletRequest request, @RequestBody CheckPasswordRequestDto checkPasswordRequestDto) {
-
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(200, "비밀번호가 일치합니다.", userService.checkPassword(request,checkPasswordRequestDto)));
+                .body(ApiResponse.success(200, "비밀번호가 일치합니다.", userService.checkPassword(userId,checkPasswordRequestDto)));
     }
 
     @PatchMapping(path = "/password")
     @Operation(summary = "비밀번호 변경", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>>  changePassword(HttpServletRequest request, @RequestBody ChangePasswordRequestDto changePasswordRequestDto) {
-        userService.changePassword(request, changePasswordRequestDto.getPassword());
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        userService.changePassword(userId, changePasswordRequestDto.getPassword());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "비밀번호를 변경했습니다."));
     }

@@ -27,17 +27,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class CommentService {
-    private final AuthHelper authHelper;
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostCommentCountManager postCommentCountManager;
 
     // 댓글 작성
-    public CreateCommentResponseDto createComment(HttpServletRequest request, int postId, CreateCommentRequestDto createCommentRequestDto){
+    public CreateCommentResponseDto createComment(int userId, int postId, CreateCommentRequestDto createCommentRequestDto){
         // 댓글 길이 확인
         if(createCommentRequestDto.getContent().isEmpty() || createCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.INVALID_COMMENT);
 
-        User user = authHelper.findUserFromRequest(request);
+        User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
         Comment comment = new Comment(createCommentRequestDto.getContent(), user, post);
@@ -50,19 +50,19 @@ public class CommentService {
 
     // 모든 댓글 리스트 조회
     @Transactional(readOnly = true)
-    public Slice<AllCommentResponseDto> getAllComments(HttpServletRequest request, int postId, Pageable pageable) {
-        return commentRepository.getAllComments(authHelper.findUserFromRequest(request).getId(), postId, pageable);
+    public Slice<AllCommentResponseDto> getAllComments(int userId, int postId, Pageable pageable) {
+        return commentRepository.getAllComments(userId, postId, pageable);
     }
 
     // 댓글 수정
-    public ChangeCommentResponseDto changeComment(HttpServletRequest request, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
+    public ChangeCommentResponseDto changeComment(int userId, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
         // 댓글 길이 확인
         if(changeCommentRequestDto.getContent().isEmpty() || changeCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.INVALID_COMMENT);
 
         Comment comment = commentRepository.findByIdWithUser(commentId)
                 .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getUser().getId().equals(authHelper.findUserFromRequest(request).getId())) {
+        if (!comment.getUser().getId().equals(userId)) {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
@@ -72,11 +72,11 @@ public class CommentService {
     }
 
     // 댓글 삭제
-    public void deleteComment(HttpServletRequest request, int commentId) {
+    public void deleteComment(int userId, int commentId) {
         Comment comment = commentRepository.findByIdWithUserAndPost(commentId)
                 .orElseThrow(() -> new RestApiException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getUser().equals(authHelper.findUserFromRequest(request))) {
+        if (!comment.getUser().getId().equals(userId)) {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
