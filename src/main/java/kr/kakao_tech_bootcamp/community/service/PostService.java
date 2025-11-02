@@ -35,7 +35,7 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class PostService {
-    private final AuthHelper authHelper;
+    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostImageService postImageService;
     private final PostViewCountManager postViewCountManager;
@@ -44,8 +44,7 @@ public class PostService {
 
     // 모든 게시글 조회
     @Transactional(readOnly = true)
-    public Slice<AllPostResponseDto> getAllPosts(HttpServletRequest request, Pageable pageable) {
-        int userId = authHelper.findUserFromRequest(request).getId();
+    public Slice<AllPostResponseDto> getAllPosts(int userId, Pageable pageable) {
         // DB에서 모든 게시글 받아옴
         Slice<AllPostResponseDto> allPosts = postRepository.getAllPosts(userId, pageable);
 
@@ -67,12 +66,12 @@ public class PostService {
     }
 
     // 게시글 생성
-    public CreatePostResponseDto createPost(HttpServletRequest request, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+    public CreatePostResponseDto createPost(int userId, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
         // 제목, 내용 길이 확인
         if(createPostRequestDto.getTitle().isEmpty() || createPostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
         if(createPostRequestDto.getContent().isEmpty() || createPostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
-        User user = authHelper.findUserFromRequest(request);
+        User user = userRepository.getOne(userId);
         Post post = new Post(createPostRequestDto.getTitle(), createPostRequestDto.getContent(), user);
 
         if (imageList != null && !imageList.isEmpty()) {
@@ -85,8 +84,7 @@ public class PostService {
 
     // 게시글 상세 조회
     @Transactional(readOnly = true)
-    public GetPostDetailResponseDto getPostDetail(HttpServletRequest request, int postId) {
-        int userId = authHelper.findUserFromRequest(request).getId();
+    public GetPostDetailResponseDto getPostDetail(int userId, int postId) {
         GetPostDetailResponseDto postDetail = postRepository.getPostByPostId(userId, postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
 
         postViewCountManager.increaseViewCount(postId);
@@ -100,16 +98,15 @@ public class PostService {
     }
 
     // 게시글 수정
-    public void updatePost(HttpServletRequest request, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
+    public void updatePost(int userId, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
         // 제목, 내용 길이 확인
         if(updatePostRequestDto.getTitle().isEmpty() || updatePostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
         if(updatePostRequestDto.getContent().isEmpty() || updatePostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
-        User user = authHelper.findUserFromRequest(request);
 
         // 게시글 작성자와 수정하려는 사람이 다르면 forbidden 예외 처리
-        if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
+        if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         post.setTitle(updatePostRequestDto.getTitle());
         post.setContent(updatePostRequestDto.getContent());
@@ -135,11 +132,10 @@ public class PostService {
     }
 
     // 게시글 삭제
-    public void deletePost(HttpServletRequest request, int postId) {
+    public void deletePost(int userId, int postId) {
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
-        User user = authHelper.findUserFromRequest(request);
 
-        if (!post.getUser().equals(user)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
+        if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
         if(post.getDeletedAt()!=null) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
 
