@@ -1,9 +1,11 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.UserStatus;
+import kr.kakao_tech_bootcamp.community.dto.TokenResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.LoginRequestDto;
 import kr.kakao_tech_bootcamp.community.entity.RefreshToken;
 import kr.kakao_tech_bootcamp.community.entity.User;
@@ -14,6 +16,7 @@ import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.repository.RefreshTokenRepository;
 import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.Token;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +26,11 @@ import java.time.Instant;
 @RequiredArgsConstructor
 @Transactional
 public class AuthService {
-
     private final JwtProvider jwtProvider;
-    private final AuthHelper authHelper;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-
     // 로그인
-    public void login(HttpServletResponse response, LoginRequestDto request) {
+    public TokenResponseDto login(LoginRequestDto request) {
         // 이메일 확인
         User user = userRepository.findByActiveEmail(request.getEmail())
                 .orElseThrow(() -> new RestApiException(UserErrorCode.INVALID_CREDENTIALS));
@@ -42,44 +42,44 @@ public class AuthService {
 
         // 기존 refresh token 무효화
         refreshTokenRepository.deleteByUserId(user.getId());
+        String accessToken = jwtProvider.generateAccessToken(user.getId(), "USER");
+        String refreshToken = jwtProvider.generateRefreshToken(user.getId());
 
-        // 새 토큰 발급 및 저장
-        var tokenResponse = authHelper.generateAndSaveTokens(user);
+        // refresh token 저장
+        RefreshToken refreshEntity = RefreshToken.of(user.getId(), refreshToken, jwtProvider.getExpirationDateFromToken(refreshToken));
+        refreshTokenRepository.save(refreshEntity);
 
-        // 쿠키 추가
-        authHelper.addTokenCookies(response, tokenResponse);
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 
     // 로그아웃
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
+    public void logout(int userId) {
         // DB에서 userId 에 해당하는 refreshToken 모두 삭제
-        refreshTokenRepository.deleteByUserId(authHelper.findUserFromRequest(request).getId());
-        authHelper.addTokenCookie(response, "accessToken", null, 0);
-        authHelper.addTokenCookie(response, "refreshToken", null, 0);
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
     // 토큰 재발급
     @Transactional
-    public void tokenReissue(String refreshToken, HttpServletResponse response) {
+    public TokenResponseDto tokenReissue(String refreshToken) {
         if(refreshToken==null){
             throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
         }
 
         var parsedRefreshToken = jwtProvider.parse(refreshToken);
 
-        // 저장된 refreshToken 찾아서 entity에 저장
+        // 저장된 refreshToken 찾음
         RefreshToken entity = refreshTokenRepository.findByRefreshToken(refreshToken).orElseThrow(()->new RestApiException(CommonErrorCode.UNAUTHORIZED));
 
+        // 이미 만료됐으면 unauthorized 에러
         if(entity.getExpiresAt().isBefore(Instant.now())) throw new RestApiException(CommonErrorCode.UNAUTHORIZED);
 
         int userId = Integer.parseInt(parsedRefreshToken.getBody().getSubject());
-        User user = userRepository.findById(userId).orElseThrow(()->new RestApiException(CommonErrorCode.UNAUTHORIZED));
+        refreshTokenRepository.deleteByUserId(userId);      // 유저가 발급받은 refreshToken 삭제
 
         // access, refresh token 갱신
-        var tokenResponse = authHelper.generateAndSaveTokens(user);
+        String newAccessToken = jwtProvider.generateAccessToken(userId, "USER");
+        String newRefreshToken = jwtProvider.generateRefreshToken(userId);
 
-        // 쿠키 추가
-        authHelper.addTokenCookies(response, tokenResponse);
-
+        return new TokenResponseDto(newAccessToken, newRefreshToken);
     }
 }

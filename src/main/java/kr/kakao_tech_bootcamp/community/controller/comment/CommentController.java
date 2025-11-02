@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentService commentService;
+    private final JwtProvider jwtProvider;
 
     @GetMapping("/posts/{postId}/comments")
     @Operation(summary = "게시물의 댓글 조회")
@@ -34,31 +35,35 @@ public class CommentController {
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
 
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "댓글 리스트를 성공적으로 조회했습니다.",
-                        commentService.getAllComments(request, postId, pageable)));
+                        commentService.getAllComments(userId, postId, pageable)));
     }
 
     @PostMapping("/posts/{postId}/comments")
     @Operation(summary = "댓글 작성")
     public ResponseEntity<ApiResponse<CreateCommentResponseDto>> createComment(HttpServletRequest request, @PathVariable int postId, @RequestBody CreateCommentRequestDto requestDto) {
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "댓글을 등록했습니다.", commentService.createComment(request, postId, requestDto)));
+                .body(ApiResponse.success(201, "댓글을 등록했습니다.", commentService.createComment(userId, postId, requestDto)));
     }
 
     @PatchMapping("/comments/{commentId}")
     @Operation(summary = "댓글 수정")
     public ResponseEntity<ApiResponse<ChangeCommentResponseDto>> changeComment(HttpServletRequest request, @PathVariable int commentId, @RequestBody ChangeCommentRequestDto requestDto) {
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "댓글을 수정했습니다.",
-                        commentService.changeComment(request, commentId, requestDto)));
+                        commentService.changeComment(userId, commentId, requestDto)));
     }
 
     @DeleteMapping("/comments/{commentId}")
     @Operation(summary = "댓글 삭제")
     public ResponseEntity<ApiResponse<Void>> deleteComment(HttpServletRequest request, @PathVariable int commentId) {
-        commentService.deleteComment(request, commentId);
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        commentService.deleteComment(userId, commentId);
         return ResponseEntity.ok(ApiResponse.success(200, "댓글을 삭제했습니다."));
     }
 }

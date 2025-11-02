@@ -9,6 +9,7 @@ import kr.kakao_tech_bootcamp.community.dto.request.post.UpdatePostRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.AllPostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.CreatePostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.GetPostDetailResponseDto;
+import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -27,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final JwtProvider jwtProvider;
 
     @GetMapping
     @Operation(summary = "모든 게시글 조회")
@@ -34,7 +36,8 @@ public class PostController {
             HttpServletRequest request,
             @ParameterObject
             Pageable pageable){
-        Slice<AllPostResponseDto> postSlice= postService.getAllPosts(request, pageable);
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        Slice<AllPostResponseDto> postSlice= postService.getAllPosts(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "게시글 전체 조회에 성공했습니다.", postSlice));
@@ -46,8 +49,9 @@ public class PostController {
             HttpServletRequest request,
             @PathVariable int postId
     ){
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(200, "게시글을 성공적으로 조회했습니다.", postService.getPostDetail(request, postId)));
+                .body(ApiResponse.success(200, "게시글을 성공적으로 조회했습니다.", postService.getPostDetail(userId, postId)));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -57,8 +61,9 @@ public class PostController {
             @ModelAttribute CreatePostRequestDto createPostRequestDto,
             @RequestPart(value="images", required=false) List<MultipartFile> imageList
     ){
+        int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(request, createPostRequestDto, imageList)));
+                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(userId, createPostRequestDto, imageList)));
     }
 
     @PatchMapping(path = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -69,7 +74,8 @@ public class PostController {
             @ModelAttribute UpdatePostRequestDto updatePostRequestDto,
             @RequestPart(value="images", required = false) List<MultipartFile> imageList
     ){
-        postService.updatePost(request, postId, updatePostRequestDto, imageList);
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        postService.updatePost(userId, postId, updatePostRequestDto, imageList);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "게시글 수정에 성공했습니다."));
@@ -81,7 +87,8 @@ public class PostController {
             HttpServletRequest request,
             @PathVariable int postId
     ){
-        postService.deletePost(request, postId);
+        int userId = jwtProvider.extractUserIdFromRequest(request);
+        postService.deletePost(userId, postId);
 
         return ResponseEntity.ok(ApiResponse.success(200, "게시글을 삭제했습니다."));
     }

@@ -31,7 +31,6 @@ import java.util.UUID;
 @Transactional
 @RequiredArgsConstructor
 public class UserService {
-    private final AuthHelper authHelper;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -84,13 +83,13 @@ public class UserService {
 
     // 내 정보 조회
     @Transactional(readOnly = true) // 읽기 전용. 변경 감지 x -> 불필요한 DB I/O 생략
-    public GetMeResponseDto getMyInfo(HttpServletRequest request) {
-        User user = authHelper.findUserFromRequest(request);
+    public GetMeResponseDto getMyInfo(int userId) {
+        User user = userRepository.getReferenceById(userId);
         return GetMeResponseDto.from(user);
     }
 
     // 회원정보 수정
-    public void changeMyInfo(HttpServletRequest request, String nickname, MultipartFile image) {
+    public void changeMyInfo(int userId, String nickname, MultipartFile image) {
         // 닉네임 길이 확인
         if (nickname == null || nickname.isEmpty()) {
             throw new IllegalArgumentException("닉네임을 입력해주세요");
@@ -99,7 +98,7 @@ public class UserService {
             throw new RestApiException(UserErrorCode.INVALID_NICKNAME);
         }
 
-        User user = authHelper.findUserFromRequest(request);
+        User user = userRepository.getReferenceById(userId);
 
         // 닉네임 중복 사전 검증 (자기 자신 제외)
         if (userRepository.existsByNickname(nickname) && !user.getNickname().equals(nickname)) {
@@ -127,8 +126,8 @@ public class UserService {
     }
 
     // 현재 비밀번호 확인
-    public CheckPasswordResponseDto checkPassword(HttpServletRequest request, CheckPasswordRequestDto checkPasswordRequestDto) {
-        User user = authHelper.findUserFromRequest(request);
+    public CheckPasswordResponseDto checkPassword(int userId, CheckPasswordRequestDto checkPasswordRequestDto) {
+        User user = userRepository.getReferenceById(userId);
 
         boolean isMatch = user.getPassword().equals(checkPasswordRequestDto.getPassword());
         if (!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
@@ -137,12 +136,12 @@ public class UserService {
     }
 
     // 비밀번호 변경
-    public void changePassword(HttpServletRequest request, String newPassword) {
+    public void changePassword(int userId, String newPassword) {
         if (newPassword.length() < 8 || newPassword.length() > 16) {
             throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
         }
 
-        User user = authHelper.findUserFromRequest(request);
+        User user = userRepository.getReferenceById(userId);
 
         user.setPassword(newPassword);
 
@@ -150,8 +149,8 @@ public class UserService {
     }
 
     // 회원 삭제
-    public void delete(HttpServletRequest request, HttpServletResponse response) {
-        User user = authHelper.findUserFromRequest(request);
+    public void delete(int userId) {
+        User user = userRepository.getReferenceById(userId);
 
         if (user.getUserStatus() == UserStatus.DELETED) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST );
@@ -160,9 +159,6 @@ public class UserService {
         user.deleteUser();
 
         // DB에서 토큰 삭제
-        refreshTokenRepository.deleteByUserId(authHelper.findUserFromRequest(request).getId());
-        // 쿠키의 토큰 만료시킴
-        authHelper.addTokenCookie(response, "accessToken", null, 0);
-        authHelper.addTokenCookie(response, "refreshToken", null, 0);
+        refreshTokenRepository.deleteByUserId(userId);
     }
 }
