@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -55,11 +56,11 @@ public class PostService {
 
         // DB에서 가져온 값과 매니저에 저장된 값 더해서 새 객체로 리스트에 저장
         List<AllPostResponseDto> allPostResponseDtoList = allPosts.getContent().stream().map(posts -> {
-            int likeCount = posts.getLikesCount()+like.getOrDefault(posts.getPostId(), 0);
-            int commentCount = posts.getCommentsCount() + comment.getOrDefault(posts.getPostId(), 0);
-            int viewCount = posts.getViewsCount()+view.getOrDefault(posts.getPostId(), 0);
+            int likeCount = like.getOrDefault(posts.getPostId(), 0);
+            int commentCount = comment.getOrDefault(posts.getPostId(), 0);
+            int viewCount = +view.getOrDefault(posts.getPostId(), 0);
 
-            return AllPostResponseDto.plusCounts(posts, likeCount, commentCount, viewCount);
+            return posts.plusCounts(posts, likeCount, commentCount, viewCount);
         }).toList();
 
         return new SliceImpl<>(allPostResponseDtoList, pageable, allPosts.hasNext());
