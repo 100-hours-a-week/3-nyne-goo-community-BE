@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -33,6 +35,8 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png");
 
     // 이메일 중복 확인
     @Transactional(readOnly = true)
@@ -63,7 +67,17 @@ public class UserService {
         if (image != null) {
             // 이미지 파일에서 확장자 추출해서 랜덤 UUID값에 확장자 붙여서 저장
             imageName = image.getOriginalFilename();
-            String ext = imageName.substring(imageName.lastIndexOf("."));
+
+            // 파일 이름 없을 때
+            if(imageName==null || imageName.isBlank()) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
+            int dot = imageName.lastIndexOf('.');
+
+            // 확장자 없을 때
+            if(dot<0 || dot == imageName.length()-1) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
+            String ext = imageName.substring(dot).toLowerCase(Locale.ROOT);
+
+            // 허용되지 않은 확장자일때
+            if(!ALLOWED_EXT.contains(ext)) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
             imageUUID = UUID.randomUUID() + ext;
 
             String uploadDir = System.getProperty("user.dir") + "/uploads/";
@@ -84,7 +98,7 @@ public class UserService {
     // 내 정보 조회
     @Transactional(readOnly = true) // 읽기 전용. 변경 감지 x -> 불필요한 DB I/O 생략
     public GetMeResponseDto getMyInfo(int userId) {
-        User user = userRepository.getReferenceById(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
         return GetMeResponseDto.from(user);
     }
 
