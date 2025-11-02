@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionManager {
     private static final String SESSION_COOKIE_NAME = "SID";
     private static final int SESSION_DURATION = 60 * 30;     // 30분
+    private static final int THROTTLE_SECONDS = 60*5;        // 5분
+    private static final long ABSOLUTE_TIMEOUT_SECONDS = 60L*60*24*7; // 7일
     private final Map<String, SessionUserDto> sessionStore = new ConcurrentHashMap<>();
 
     // 세션 생성
@@ -26,14 +28,12 @@ public class SessionManager {
         // UUID 랜덤으로 생성해서 sessionId 에 넣고 user와 함께 sessionStore에 저장
         String sessionId = UUID.randomUUID().toString();
         sessionStore.put(sessionId, SessionUserDto.of(user.getId(), SESSION_DURATION));
-        System.out.println("sessiontStore: " + sessionStore);
 
         Cookie sessionCookie = new Cookie(SESSION_COOKIE_NAME, sessionId);
         sessionCookie.setHttpOnly(true);       // JS에서 접근 불가 → XSS 방어
         sessionCookie.setPath("/");
         sessionCookie.setMaxAge(SESSION_DURATION);
         response.addCookie(sessionCookie);
-
     }
 
     // 세션으로부터 유저 가져오기
@@ -50,25 +50,57 @@ public class SessionManager {
             System.out.println("세션 저장 안됨");
             return null;
         }
+
+        // 1. absolute는 연장 불가하기 때문에 먼저 확인
+        // 2. expired 확인해서 최근 활동 없으면 세션 종료
+        // 3. 갱신 대상인지 확인해서 갱신
+
+        // absolute 만료 여부
+        if(sessionUserDto.isAbsoluteExpired(ABSOLUTE_TIMEOUT_SECONDS)) {
+            expireSession(request, response);
+            return null;
+        }
+
+        // 세션 만료
         if (sessionUserDto.isExpired()) {
             sessionStore.remove(cookie.getValue());
             System.out.println("세션 만료됨");
             return null;
         }
 
-        // 세션 저장소에 만료 시간 갱신
-        sessionUserDto.renew(SESSION_DURATION);
+        // 수명 연장 필요한지
+        if(shouldTouch(request) && sessionUserDto.canTouch(THROTTLE_SECONDS)){
+            // 세션 저장소에 만료 시간 갱신
+            sessionUserDto.renew(SESSION_DURATION);
 
-        // 쿠키에도 만료 시간 갱신
-        Cookie sessionCookie = new Cookie(SESSION_COOKIE_NAME, cookie.getValue());
-        sessionCookie.setHttpOnly(true);       // JS에서 접근 불가 → XSS 방어
-        sessionCookie.setPath("/");
-        sessionCookie.setMaxAge(SESSION_DURATION);
-        response.addCookie(sessionCookie);
+            // 쿠키에도 만료 시간 갱신
+            Cookie sessionCookie = new Cookie(SESSION_COOKIE_NAME, cookie.getValue());
+            sessionCookie.setHttpOnly(true);       // JS에서 접근 불가 → XSS 방어
+            sessionCookie.setPath("/");
+            sessionCookie.setMaxAge(SESSION_DURATION);
+            response.addCookie(sessionCookie);
 
-        System.out.println("session duration: " + sessionUserDto.getExpiresAt());
+            System.out.println("session duration: " + sessionUserDto.getExpiresAt());
+        }
 
         return sessionUserDto;
+    }
+
+    private boolean shouldTouch(HttpServletRequest request) {
+        String method = request.getMethod();
+        String path = request.getRequestURI();
+
+        // 상태 변경 시
+        if("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method) || "DELETE".equals(method)) return true;
+
+        // GET 중 필요한 엔드포인트
+        if(path.startsWith("/users") || path.startsWith("/auth")) return true;
+
+        // 클라이언트가 의도적으로 세션 연장 요청
+        if("true".equalsIgnoreCase(request.getHeader("X-Session-Touch"))) return true;
+
+        // 그 외 (일반 GET.. 등)
+        return false;
     }
 
     // 세션 만료시키기
