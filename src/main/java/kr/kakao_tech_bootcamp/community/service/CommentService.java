@@ -66,7 +66,7 @@ public class CommentService {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
-        comment.setContent(changeCommentRequestDto.getContent());
+        comment.updateContent(changeCommentRequestDto.getContent());
 
         return ChangeCommentResponseDto.from(comment);
     }
