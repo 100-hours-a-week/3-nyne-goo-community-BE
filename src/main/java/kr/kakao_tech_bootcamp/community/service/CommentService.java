@@ -34,6 +34,7 @@ public class CommentService {
 
     // 댓글 작성
     public CreateCommentResponseDto createComment(HttpServletRequest request, int postId, CreateCommentRequestDto createCommentRequestDto){
+        // 댓글 길이 확인
         if(createCommentRequestDto.getContent().isEmpty() || createCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.INVALID_COMMENT);
 
         User user = authHelper.findUserFromRequest(request);
@@ -55,6 +56,7 @@ public class CommentService {
 
     // 댓글 수정
     public ChangeCommentResponseDto changeComment(HttpServletRequest request, int commentId, ChangeCommentRequestDto changeCommentRequestDto) {
+        // 댓글 길이 확인
         if(changeCommentRequestDto.getContent().isEmpty() || changeCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.INVALID_COMMENT);
 
         Comment comment = commentRepository.findByIdWithUser(commentId)
@@ -64,7 +66,7 @@ public class CommentService {
             throw new RestApiException(CommonErrorCode.FORBIDDEN);
         }
 
-        comment.setContent(changeCommentRequestDto.getContent());
+        comment.updateContent(changeCommentRequestDto.getContent());
 
         return ChangeCommentResponseDto.from(comment);
     }

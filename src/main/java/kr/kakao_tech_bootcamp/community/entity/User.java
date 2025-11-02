@@ -5,6 +5,7 @@ import jakarta.persistence.Table;
 import kr.kakao_tech_bootcamp.community.UserStatus;
 import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET status = 'DELETED', deleted_at = NOW() WHERE id = ?")
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,13 +44,10 @@ public class User {
     @Column(name = "image_original_name")
     private String imageName;
 
-    protected User() {
-    }
-
-    public User(SignUpRequestDto signUpRequestDto, String imageUUID, String imageName) {
-        this.email = signUpRequestDto.getEmail();
-        this.nickname = signUpRequestDto.getNickname();
-        this.password = signUpRequestDto.getPassword();
+    public User(String email, String nickname, String password, String imageUUID, String imageName) {
+        this.email = email;
+        this.nickname = nickname;
+        this.password = password;
         this.createdAt = LocalDateTime.now();
         this.userStatus = UserStatus.ACTIVE;
 
