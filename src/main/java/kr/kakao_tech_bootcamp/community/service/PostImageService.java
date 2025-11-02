@@ -14,15 +14,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class PostImageService {
     private final PostImageRepository postImageRepository;
+
+    private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png");
 
     // 이미지 추가
     public List<PostImage> createPostImages(List<MultipartFile> imageList, Post post) {
@@ -33,7 +33,17 @@ public class PostImageService {
         for(int i=0; i<imageList.size();i++){
             MultipartFile image = imageList.get(i);
             String imageName = image.getOriginalFilename();
-            String ext = imageName.substring(imageName.lastIndexOf("."));
+
+            // 파일 이름 없을 때
+            if(imageName==null || imageName.isBlank()) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
+            int dot = imageName.lastIndexOf('.');
+
+            // 확장자 없을 때
+            if(dot<0 || dot == imageName.length()-1) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
+            String ext = imageName.substring(dot).toLowerCase(Locale.ROOT);
+
+            // 허용되지 않은 확장자일때
+            if(!ALLOWED_EXT.contains(ext)) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
             String imageUUID = UUID.randomUUID() + ext;
 
             PostImage postImage = new PostImage(imageUUID, imageName, i, post);

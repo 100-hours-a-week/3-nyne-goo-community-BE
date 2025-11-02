@@ -22,7 +22,7 @@ public class AllPostResponseDto {
     private boolean isLike;
     private Author author;
 
-    public static AllPostResponseDto plusCounts(AllPostResponseDto post, int likesCount, int commentsCount, int viewsCount) {
+    public AllPostResponseDto plusCounts(AllPostResponseDto post, int likesCount, int commentsCount, int viewsCount) {
         int like = post.getLikesCount()+likesCount;
         int comments = post.getCommentsCount()+commentsCount;
         int views = post.getViewsCount()+viewsCount;
