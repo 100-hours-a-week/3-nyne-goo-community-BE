@@ -81,6 +81,10 @@ public class AuthService {
         String newAccessToken = jwtProvider.generateAccessToken(userId, "USER");
         String newRefreshToken = jwtProvider.generateRefreshToken(userId);
 
+        // 갱신한 refresh token 저장
+        RefreshToken newRefreshEntity = RefreshToken.of(userId, newRefreshToken, jwtProvider.getExpirationDateFromToken(newRefreshToken));
+        refreshTokenRepository.save(newRefreshEntity);
+
         return new TokenResponseDto(newAccessToken, newRefreshToken);
     }
 }
