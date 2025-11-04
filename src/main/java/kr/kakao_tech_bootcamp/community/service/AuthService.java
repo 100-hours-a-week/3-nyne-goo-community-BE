@@ -17,6 +17,7 @@ import kr.kakao_tech_bootcamp.community.repository.RefreshTokenRepository;
 import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.Token;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 로그인
     public TokenResponseDto login(LoginRequestDto request) {
@@ -36,8 +38,11 @@ public class AuthService {
         User user = userRepository.findByActiveEmail(request.getEmail())
                 .orElseThrow(() -> new RestApiException(UserErrorCode.INVALID_CREDENTIALS));
 
+        boolean isMatch = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        System.out.println(isMatch);
+
         // 비밀번호 확인
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!isMatch) {
             throw new RestApiException(UserErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -80,6 +85,10 @@ public class AuthService {
         // access, refresh token 갱신
         String newAccessToken = jwtProvider.generateAccessToken(userId, "USER");
         String newRefreshToken = jwtProvider.generateRefreshToken(userId);
+
+        // 갱신한 refresh token 저장
+        RefreshToken newRefreshEntity = RefreshToken.of(userId, newRefreshToken, jwtProvider.getExpirationDateFromToken(newRefreshToken));
+        refreshTokenRepository.save(newRefreshEntity);
 
         return new TokenResponseDto(newAccessToken, newRefreshToken);
     }

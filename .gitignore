@@ -24,3 +24,10 @@ hs_err_pid*
 replay_pid*
 
 .DS_Store
+
+# 비밀 설정 파일
+src/main/resources/application-secret.yml
+
+# 실행 파일 ignore 하지 않게 함
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
