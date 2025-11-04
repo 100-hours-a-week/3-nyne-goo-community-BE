@@ -17,6 +17,7 @@ import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.repository.RefreshTokenRepository;
 import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,7 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png");
 
@@ -91,7 +93,9 @@ public class UserService {
             }
         }
 
-        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), signUpRequestDto.getPassword(), imageUUID, imageName);
+        String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
+
+        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageUUID, imageName);
         return SignUpResponseDto.from(userRepository.save(user));
     }
 
@@ -143,7 +147,7 @@ public class UserService {
     public CheckPasswordResponseDto checkPassword(int userId, CheckPasswordRequestDto checkPasswordRequestDto) {
         User user = userRepository.getReferenceById(userId);
 
-        boolean isMatch = user.getPassword().equals(checkPasswordRequestDto.getPassword());
+        boolean isMatch = passwordEncoder.matches(checkPasswordRequestDto.getPassword(), user.getPassword());
         if (!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
 
         return CheckPasswordResponseDto.from(isMatch);
@@ -157,7 +161,8 @@ public class UserService {
 
         User user = userRepository.getReferenceById(userId);
 
-        user.setPassword(newPassword);
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
 
         // save() 불필요 -> dirty checking 자동 처리!
     }
