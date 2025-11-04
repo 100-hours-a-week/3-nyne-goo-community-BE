@@ -35,12 +35,12 @@ public class CommentService {
     // 댓글 작성
     public CreateCommentResponseDto createComment(int userId, int postId, CreateCommentRequestDto createCommentRequestDto){
         // 댓글 길이 확인
-        if(createCommentRequestDto.getContent().isEmpty() || createCommentRequestDto.getContent().length()>500) throw new RestApiException(CommentErrorCode.INVALID_COMMENT);
+        if(createCommentRequestDto.content().isEmpty() || createCommentRequestDto.content().length()>500) throw new RestApiException(CommentErrorCode.INVALID_COMMENT);
 
         User user = userRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(postId);
 
-        Comment comment = new Comment(createCommentRequestDto.getContent(), user, post);
+        Comment comment = new Comment(createCommentRequestDto.content(), user, post);
         commentRepository.save(comment);
 
         postCommentCountManager.increaseComment(postId);

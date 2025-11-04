@@ -68,12 +68,13 @@ public class PostService {
 
     // 게시글 생성
     public CreatePostResponseDto createPost(int userId, CreatePostRequestDto createPostRequestDto, List<MultipartFile> imageList) {
+        System.out.println("create post request: "+createPostRequestDto.title());
         // 제목, 내용 길이 확인
-        if(createPostRequestDto.getTitle().isEmpty() || createPostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
-        if(createPostRequestDto.getContent().isEmpty() || createPostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
+        if(createPostRequestDto.title() == null || createPostRequestDto.title().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
+        if(createPostRequestDto.content() == null || createPostRequestDto.content().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
         User user = userRepository.getOne(userId);
-        Post post = new Post(createPostRequestDto.getTitle(), createPostRequestDto.getContent(), user);
+        Post post = new Post(createPostRequestDto.title(), createPostRequestDto.content(), user);
 
         if (imageList != null && !imageList.isEmpty()) {
             List<PostImage> postImageList = postImageService.createPostImages(imageList, post);
@@ -101,16 +102,16 @@ public class PostService {
     // 게시글 수정
     public void updatePost(int userId, int postId, UpdatePostRequestDto updatePostRequestDto, List<MultipartFile> imageList) {
         // 제목, 내용 길이 확인
-        if(updatePostRequestDto.getTitle().isEmpty() || updatePostRequestDto.getTitle().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
-        if(updatePostRequestDto.getContent().isEmpty() || updatePostRequestDto.getContent().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
+        if(updatePostRequestDto.title().isEmpty() || updatePostRequestDto.title().length()>26) throw new RestApiException(PostErrorCode.INVALID_TITLE);
+        if(updatePostRequestDto.content().isEmpty() || updatePostRequestDto.content().length()>2000) throw new RestApiException(PostErrorCode.INVALID_CONTENT);
 
         Post post = postRepository.findByIdWithUser(postId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
 
         // 게시글 작성자와 수정하려는 사람이 다르면 forbidden 예외 처리
         if (!post.getUser().getId().equals(userId)) throw new RestApiException(CommonErrorCode.FORBIDDEN);
 
-        post.setTitle(updatePostRequestDto.getTitle());
-        post.setContent(updatePostRequestDto.getContent());
+        post.setTitle(updatePostRequestDto.title());
+        post.setContent(updatePostRequestDto.content());
         post.setUpdatedAt();
 
         // 기존에 저장된 이미지 리스트 삭제
