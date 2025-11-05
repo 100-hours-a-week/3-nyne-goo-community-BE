@@ -86,7 +86,9 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const SIGNUP_URL = [[${signupUrl}]];
     const agreePrivacy = document.getElementById("agreePrivacy");
     const nextBtn = document.getElementById("nextBtn");
 
@@ -97,9 +99,10 @@
 
     nextBtn.addEventListener("click", () => {
         if (agreePrivacy.checked) {
-            window.location.href = "http://localhost:3000/signup";
+            window.location.href = SIGNUP_URL;
         }
     });
+    /*]]>*/
 </script>
 </body>
 </html>
