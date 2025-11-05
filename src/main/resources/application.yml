@@ -39,3 +39,7 @@ logging:
     org.hibernate.SQL: debug
     org.springframework.web: DEBUG
     org.springframework.transaction: DEBUG
+
+app:
+  frontend:
+    signup-url: ${FRONTEND_SIGNUP_URL:http://localhost:3000/signup}
