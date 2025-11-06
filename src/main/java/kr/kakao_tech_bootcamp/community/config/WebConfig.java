@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
@@ -9,11 +10,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     // 허용할 origin 추가
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000") // 허용할 출처
+                .allowedOrigins(frontendUrl) // 허용할 출처
                 .allowedMethods("GET", "POST", "PATCH", "DELETE") // 허용할 메서드
                 .allowedHeaders("*") // 허용할 요청 헤더
                 .allowCredentials(true) // 쿠키 허용

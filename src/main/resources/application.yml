@@ -42,4 +42,4 @@ logging:
 
 app:
   frontend:
-    signup-url: ${FRONTEND_SIGNUP_URL:http://localhost:3000/signup}
+    url: ${FRONTEND_URL:http://localhost:3000}
