@@ -8,10 +8,15 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Paths;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     @Value("${app.frontend.url}")
     private String frontendUrl;
+
+    @Value("${storage.upload-dir}")
+    private String uploadDir;
 
     // 허용할 origin 추가
     @Override
@@ -27,9 +32,9 @@ public class WebConfig implements WebMvcConfigurer {
     // 로컬의 uploads 디렉토리 안의 파일을 url로 접근 가능하도록 만들어줌
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadPath = System.getProperty("user.dir") + "/uploads/";
+        String uri = Paths.get(uploadDir).toUri().toString();
 
-        registry.addResourceHandler("/uploads/**").addResourceLocations("file:" + uploadPath);
+        registry.addResourceHandler("/uploads/**").addResourceLocations(uri);
     }
 
     // mime 타입
