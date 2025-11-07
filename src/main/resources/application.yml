@@ -43,3 +43,6 @@ logging:
 app:
   frontend:
     url: ${FRONTEND_URL:http://localhost:3000}
+
+storage:
+  upload-dir: ${UPLOAD_DIR:${user.dir}/uploads}
