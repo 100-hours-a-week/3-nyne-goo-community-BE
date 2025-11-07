@@ -42,6 +42,7 @@ public class PostService {
     private final PostViewCountManager postViewCountManager;
     private final PostCommentCountManager postCommentCountManager;
     private final PostLikeCountManager postLikeCountManager;
+    private final ImageStorageService imageStorageService;
 
     // 모든 게시글 조회
     @Transactional(readOnly = true)
@@ -116,14 +117,9 @@ public class PostService {
 
         // 기존에 저장된 이미지 리스트 삭제
         for (PostImage prevImage : post.getImages()) {
-            Path path = Paths.get(System.getProperty("user.dir") + "/uploads/" + prevImage.getImageUUID());
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException e) {
-                System.err.println("이미지 파일 삭제 실패: " + path + "\ner ror:" + e.getMessage());
-                throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-            }
+            imageStorageService.deleteImage(prevImage.getImageUUID());
         }
+
         post.getImages().clear();
 
         // 이미지 리스트 새로 저장

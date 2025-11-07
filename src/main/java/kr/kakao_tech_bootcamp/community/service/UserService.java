@@ -37,6 +37,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ImageStorageService imageStorageService;
 
     private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png");
 
@@ -67,30 +68,7 @@ public class UserService {
         String imageName = null;
 
         if (image != null) {
-            // 이미지 파일에서 확장자 추출해서 랜덤 UUID값에 확장자 붙여서 저장
-            imageName = image.getOriginalFilename();
-
-            // 파일 이름 없을 때
-            if(imageName==null || imageName.isBlank()) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
-            int dot = imageName.lastIndexOf('.');
-
-            // 확장자 없을 때
-            if(dot<0 || dot == imageName.length()-1) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
-            String ext = imageName.substring(dot).toLowerCase(Locale.ROOT);
-
-            // 허용되지 않은 확장자일때
-            if(!ALLOWED_EXT.contains(ext)) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
-            imageUUID = UUID.randomUUID() + ext;
-
-            String uploadDir = System.getProperty("user.dir") + "/uploads/";
-
-            try {
-                Files.createDirectories(Paths.get(uploadDir));          // 저장할 폴더 준비
-                Path path = Paths.get(uploadDir + imageUUID);      // 파일 저장 위치 (전체 경로)
-                image.transferTo(path.toFile());                        // 파일 저장
-            } catch (IOException e) {
-                throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-            }
+            imageStorageService.saveImage(image);
         }
 
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
@@ -126,20 +104,7 @@ public class UserService {
         user.setNickname(nickname);
 
         if (image != null) {
-            String imageName = image.getOriginalFilename();
-            String ext = imageName.substring(imageName.lastIndexOf("."));
-            String imageUUID = UUID.randomUUID() + ext;
-
-            user.setImage(imageUUID, imageName);
-            String uploadDir = System.getProperty("user.dir") + "/uploads/";
-
-            try {
-                Files.createDirectories(Paths.get(uploadDir));          // 저장할 폴더 준비
-                Path path = Paths.get(uploadDir + imageUUID);      // 파일 저장 위치 (전체 경로)
-                image.transferTo(path.toFile());                        // 파일 저장
-            } catch (IOException e) {
-                throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-            }
+            imageStorageService.saveImage(image);
         }
     }
 
