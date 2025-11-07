@@ -22,11 +22,7 @@ import java.util.*;
 @Transactional
 public class PostImageService {
     private final PostImageRepository postImageRepository;
-
-    @Value("${storage.upload-dir")
-    private String uploadDir;
-
-    private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png");
+    private final ImageStorageService imageStorageService;
 
     // 이미지 추가
     public List<PostImage> createPostImages(List<MultipartFile> imageList, Post post) {
@@ -36,31 +32,10 @@ public class PostImageService {
         // 이미지 리스트에서 이미지 하나씩 꺼내와 이름과 UUID+확장자 저장
         for(int i=0; i<imageList.size();i++){
             MultipartFile image = imageList.get(i);
-            String imageName = image.getOriginalFilename();
+            ImageStorageService.SavedImage savedImage = imageStorageService.saveImage(image);
 
-            // 파일 이름 없을 때
-            if(imageName==null || imageName.isBlank()) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
-            int dot = imageName.lastIndexOf('.');
-
-            // 확장자 없을 때
-            if(dot<0 || dot == imageName.length()-1) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
-            String ext = imageName.substring(dot).toLowerCase(Locale.ROOT);
-
-            // 허용되지 않은 확장자일때
-            if(!ALLOWED_EXT.contains(ext)) throw new RestApiException(CommonErrorCode.BAD_REQUEST);
-            String imageUUID = UUID.randomUUID() + ext;
-
-            PostImage postImage = new PostImage(imageUUID, imageName, i, post);
+            PostImage postImage = new PostImage(savedImage.imageUUID(), savedImage.imageName(), i, post);
             postImageList.add(postImage);
-
-            try{
-                Path root = Paths.get(uploadDir).toAbsolutePath().normalize();
-                Files.createDirectories(root);          // 저장할 폴더 준비
-                Path path = root.resolve(imageUUID).normalize();     // 파일 저장 위치
-                image.transferTo(path.toFile());                        // 파일 저장
-            } catch (IOException e) {
-                throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-            }
         }
 
         return postImageRepository.saveAll(postImageList);
