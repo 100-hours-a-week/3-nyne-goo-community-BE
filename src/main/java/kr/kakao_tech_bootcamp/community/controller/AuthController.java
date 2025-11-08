@@ -24,7 +24,7 @@ public class AuthController {
 
     @PostMapping
     @Operation(summary = "로그인")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> login(HttpServletResponse response, @RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<ApiResponse<Void>> login(HttpServletResponse response, @RequestBody LoginRequestDto loginRequestDto) {
         TokenResponseDto tokenResponseDto = authService.login(loginRequestDto);
         cookieUtil.addTokenCookies(response, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken());
 
