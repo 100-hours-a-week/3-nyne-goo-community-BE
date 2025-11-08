@@ -58,19 +58,11 @@ public class PostRepositoryImpl implements PostQueryRepository {
                         post.likesCount,
                         post.commentsCount,
                         post.viewsCount,
-                        new CaseBuilder()
-                                .when(postLike.user.id.eq(userId)).then(true)
-                                .otherwise(false).as("isLike"),
+                        post.user.id.eq(userId),
                         Projections.constructor(Author.class,
-                                new CaseBuilder()
-                                        .when(user.imageUUID.isNotNull())
-                                        .then(true)
-                                        .otherwise(false)
-                                        .as("profileImageUrl"),
+                                user.imageUUID,
                                 user.nickname,
-                                new CaseBuilder()
-                                        .when(post.user.id.eq(userId)).then(true)
-                                        .otherwise(false).as("mine"))
+                                post.user.id.eq(userId))
                 ))
                 .from(post)
                 .where(post.user.deletedAt.isNull())        // 삭제되지 않은 사용자의 게시글만 불러오기
@@ -102,19 +94,11 @@ public class PostRepositoryImpl implements PostQueryRepository {
                         post.likesCount,
                         post.commentsCount,
                         post.viewsCount,
-                        new CaseBuilder()
-                                .when(postLike.user.id.eq(userId)).then(true)
-                                .otherwise(false).as("isLike"),
+                        post.user.id.eq(userId),
                         Projections.constructor(Author.class,
-                                new CaseBuilder()
-                                        .when(user.imageUUID.isNotNull())
-                                        .then(true)
-                                        .otherwise(false)
-                                        .as("profileImageUrl"),
+                                user.imageUUID,
                                 user.nickname,
-                                new CaseBuilder()
-                                        .when(post.user.id.eq(userId)).then(true)
-                                        .otherwise(false).as("mine")
+                                post.user.id.eq(userId)
                         )
                 ))
                 .from(post)

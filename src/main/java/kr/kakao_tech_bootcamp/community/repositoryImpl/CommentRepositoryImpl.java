@@ -14,6 +14,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.querydsl.core.types.dsl.Expressions.constant;
@@ -35,17 +36,9 @@ public class CommentRepositoryImpl implements CommentQueryRepository {
                         comment.createdAt,
                         comment.updatedAt,
                         Projections.constructor(Author.class,
-                                new CaseBuilder()
-                                        .when(user.imageUUID.isNotNull())
-                                        .then(true)
-                                        .otherwise(false)
-                                        .as("profileImageUrl"),
+                                user.imageUUID,
                                 user.nickname,
-                                new CaseBuilder()
-                                        .when(comment.user.id.eq(userId))
-                                        .then(true)
-                                        .otherwise(false)
-                                        .as("mine"))
+                                comment.user.id.eq(userId))
                 ))
                 .from(comment)
                 .join(comment.post, post)

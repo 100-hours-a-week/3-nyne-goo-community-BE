@@ -8,15 +8,14 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 public class AllCommentResponseDto extends ChangeCommentResponseDto {
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
     private Author author;
 
     public AllCommentResponseDto(int commentId, String content, LocalDateTime createdAt, LocalDateTime updatedAt, Author author) {
-        super(commentId, content,  createdAt);
-        this.updatedAt = updatedAt;
+        super(commentId, content, updatedAt);
+        this.createdAt = createdAt;
         this.author = author;
     }
 }

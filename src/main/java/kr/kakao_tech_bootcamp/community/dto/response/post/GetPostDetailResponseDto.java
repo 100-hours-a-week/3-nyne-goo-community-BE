@@ -1,9 +1,6 @@
 package kr.kakao_tech_bootcamp.community.dto.response.post;
 
-import kr.kakao_tech_bootcamp.community.entity.Post;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +10,24 @@ import java.util.List;
 public class GetPostDetailResponseDto extends AllPostResponseDto {
     private String content;
     private List<ImageResponseDto> imageList;
+
+    public GetPostDetailResponseDto(
+            int postId,
+            String title,
+            String content,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            int likesCount,
+            int commentsCount,
+            int viewsCount,
+            boolean isLike,
+            Author author
+    ) {
+        this(postId, title, content, createdAt, updatedAt,
+                likesCount, commentsCount, viewsCount, isLike, author,
+                new ArrayList<>());
+    }
+
 
     public GetPostDetailResponseDto(
             int postId,

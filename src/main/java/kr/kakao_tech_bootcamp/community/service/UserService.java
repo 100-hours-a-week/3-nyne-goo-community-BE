@@ -66,7 +66,9 @@ public class UserService {
         String imageName = null;
 
         if (image != null) {
-            imageStorageService.saveImage(image);
+            ImageStorageService.SavedImage savedImage = imageStorageService.saveImage(image);
+            imageUUID = savedImage.imageUUID();
+            imageName = savedImage.imageName();
         }
 
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
@@ -104,10 +106,8 @@ public class UserService {
         user.setNickname(nickname);
 
         if (image != null) {
-            imageStorageService.saveImage(image);
-
-            String imageUUID = UUID.randomUUID().toString();
-            user.setImage(imageUUID, image.getOriginalFilename());
+            ImageStorageService.SavedImage savedImage = imageStorageService.saveImage(image);
+            user.setImage(savedImage.imageUUID(), savedImage.imageName());
         }
     }
 
