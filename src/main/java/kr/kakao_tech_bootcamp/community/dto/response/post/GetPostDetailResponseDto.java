@@ -14,25 +14,6 @@ public class GetPostDetailResponseDto extends AllPostResponseDto {
     private String content;
     private List<ImageResponseDto> imageList;
 
-    // 매개변수에 이미지 리스트 없는 생성자
-    public GetPostDetailResponseDto(
-            int postId,
-            String title,
-            String content,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            int likesCount,
-            int commentsCount,
-            int viewsCount,
-            boolean isLike,
-            Author author
-    ) {
-        super(postId, title, createdAt, updatedAt, likesCount, commentsCount, viewsCount, isLike, author);
-        this.content = content;
-        this.imageList = new ArrayList<>();
-    }
-
-    // 매개변수에 이미지 리스트 있는 생성자
     public GetPostDetailResponseDto(
             int postId,
             String title,

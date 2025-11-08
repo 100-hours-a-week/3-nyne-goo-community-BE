@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
 import kr.kakao_tech_bootcamp.community.dto.TokenResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.LoginRequestDto;
-import kr.kakao_tech_bootcamp.community.dto.response.user.LoginResponseDto;
 import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.service.AuthService;
 import kr.kakao_tech_bootcamp.community.util.CookieUtil;

@@ -5,11 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor (staticName = "of")
 public class SignUpResponseDto {
     private int userId;
-
-    public static SignUpResponseDto from(User user) {
-        return new SignUpResponseDto(user.getId());
-    }
 }

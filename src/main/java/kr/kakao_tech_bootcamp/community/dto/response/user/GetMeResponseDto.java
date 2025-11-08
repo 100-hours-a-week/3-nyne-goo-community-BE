@@ -1,23 +1,22 @@
 package kr.kakao_tech_bootcamp.community.dto.response.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import kr.kakao_tech_bootcamp.community.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
+@AllArgsConstructor(staticName = "of")
 public class GetMeResponseDto {
-    private String profileImgUrl;
+    @JsonIgnore // response 에서 숨김
+    private String imageUUID;
     private String email;
     private String nickname;
 
-    public static GetMeResponseDto from(User user) {
-        String imageUrl = null;
-        if(user.getImageUUID()!=null) imageUrl = "http://localhost:8080/uploads/" + user.getImageUUID();
-        return GetMeResponseDto.builder()
-                .profileImgUrl(imageUrl)
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .build();
+    @JsonProperty("profileImageUrl")    // response에 이 키로만 노출
+    public String getProfileImageUrl(){
+        return (imageUUID==null)?null:"/uploads/"+imageUUID;
     }
 }

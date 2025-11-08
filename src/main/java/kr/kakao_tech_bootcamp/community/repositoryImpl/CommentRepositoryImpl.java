@@ -37,8 +37,8 @@ public class CommentRepositoryImpl implements CommentQueryRepository {
                         Projections.constructor(Author.class,
                                 new CaseBuilder()
                                         .when(user.imageUUID.isNotNull())
-                                        .then(user.imageUUID.prepend(constant("http://localhost:8080/uploads/")))
-                                        .otherwise((String) null)
+                                        .then(true)
+                                        .otherwise(false)
                                         .as("profileImageUrl"),
                                 user.nickname,
                                 new CaseBuilder()

@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 public class ChangeCommentResponseDto {
     private int commentId;
     private String content;
-    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    // from 사용해서 dto 만듦
+    // of 사용해서 dto 만듦
     // 만들 때마다 new 사용하지 않아도 됨
-    public static ChangeCommentResponseDto from(Comment comment) {
+    public static ChangeCommentResponseDto of(int commentId, String content, LocalDateTime updatedAt) {
         return new ChangeCommentResponseDto(
-                comment.getId(), comment.getContent(), comment.getCreatedAt()
+                commentId, content, updatedAt
         );
     }
 }

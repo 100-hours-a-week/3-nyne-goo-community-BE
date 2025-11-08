@@ -45,7 +45,7 @@ public class CommentService {
 
         postCommentCountManager.increaseComment(postId);
 
-        return CreateCommentResponseDto.from(comment);
+        return CreateCommentResponseDto.of(comment.getId(), comment.getContent(), comment.getCreatedAt());
     }
 
     // 모든 댓글 리스트 조회
@@ -68,7 +68,7 @@ public class CommentService {
 
         comment.updateContent(changeCommentRequestDto.getContent());
 
-        return ChangeCommentResponseDto.from(comment);
+        return ChangeCommentResponseDto.of(comment.getId(), comment.getContent(), comment.getUpdatedAt());
     }
 
     // 댓글 삭제
