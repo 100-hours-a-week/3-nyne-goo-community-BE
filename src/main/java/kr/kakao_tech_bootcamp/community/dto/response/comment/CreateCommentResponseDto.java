@@ -13,7 +13,7 @@ public class CreateCommentResponseDto {
     private String content;
     private LocalDateTime createdAt;
 
-    public static CreateCommentResponseDto from(Comment comment) {
-        return new CreateCommentResponseDto(comment.getId(), comment.getContent(), comment.getCreatedAt());
+    public static CreateCommentResponseDto of(int commentId, String content, LocalDateTime createdAt) {
+        return new CreateCommentResponseDto(commentId, content, createdAt);
     }
 }

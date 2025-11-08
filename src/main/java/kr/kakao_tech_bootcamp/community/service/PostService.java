@@ -61,7 +61,7 @@ public class PostService {
             int commentCount = comment.getOrDefault(posts.getPostId(), 0);
             int viewCount = +view.getOrDefault(posts.getPostId(), 0);
 
-            return posts.plusCounts(posts, likeCount, commentCount, viewCount);
+            return posts.plusCounts(likeCount, commentCount, viewCount);
         }).toList();
 
         return new SliceImpl<>(allPostResponseDtoList, pageable, allPosts.hasNext());
@@ -82,7 +82,9 @@ public class PostService {
             post.getImages().addAll(postImageList);
         }
 
-        return CreatePostResponseDto.from(postRepository.save(post));
+        postRepository.save(post);
+
+        return CreatePostResponseDto.of(post.getId(), post.getTitle(), post.getContent(), post.getImages());
     }
 
     // 게시글 상세 조회

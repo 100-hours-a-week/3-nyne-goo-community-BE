@@ -39,8 +39,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ImageStorageService imageStorageService;
 
-    private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png");
-
     // 이메일 중복 확인
     @Transactional(readOnly = true)
     public Boolean existEmail(String email) {
@@ -74,14 +72,16 @@ public class UserService {
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
 
         User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageUUID, imageName);
-        return SignUpResponseDto.from(userRepository.save(user));
+        userRepository.save(user);
+
+        return SignUpResponseDto.of(user.getId());
     }
 
     // 내 정보 조회
     @Transactional(readOnly = true) // 읽기 전용. 변경 감지 x -> 불필요한 DB I/O 생략
     public GetMeResponseDto getMyInfo(int userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
-        return GetMeResponseDto.from(user);
+        return GetMeResponseDto.of(user.getImageUUID(), user.getEmail(), user.getNickname());
     }
 
     // 회원정보 수정
@@ -105,6 +105,9 @@ public class UserService {
 
         if (image != null) {
             imageStorageService.saveImage(image);
+
+            String imageUUID = UUID.randomUUID().toString();
+            user.setImage(imageUUID, image.getOriginalFilename());
         }
     }
 
@@ -115,7 +118,7 @@ public class UserService {
         boolean isMatch = passwordEncoder.matches(checkPasswordRequestDto.getPassword(), user.getPassword());
         if (!isMatch) throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
 
-        return CheckPasswordResponseDto.from(isMatch);
+        return CheckPasswordResponseDto.of(isMatch);
     }
 
     // 비밀번호 변경

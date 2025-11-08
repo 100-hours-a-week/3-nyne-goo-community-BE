@@ -22,14 +22,13 @@ public class AllPostResponseDto {
     private boolean isLike;
     private Author author;
 
-    public AllPostResponseDto plusCounts(AllPostResponseDto post, int likesCount, int commentsCount, int viewsCount) {
-        int like = post.getLikesCount()+likesCount;
-        int comments = post.getCommentsCount()+commentsCount;
-        int views = post.getViewsCount()+viewsCount;
+    public AllPostResponseDto plusCounts(int likesCount, int commentsCount, int viewsCount) {
+        int like =this.likesCount+likesCount;
+        int comments = this.commentsCount+commentsCount;
+        int views = this.viewsCount+viewsCount;
 
         return new AllPostResponseDto(
-                post.getPostId(), post.getTitle(), post.getCreatedAt(), post.getUpdatedAt(),
-                like, comments, views, post.isLike(), post.getAuthor()
+                postId, title, createdAt, updatedAt, like, comments, views, isLike, author
         );
     }
 }

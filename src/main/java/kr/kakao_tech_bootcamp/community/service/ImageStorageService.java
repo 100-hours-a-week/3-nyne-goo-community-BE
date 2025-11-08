@@ -21,7 +21,7 @@ public class ImageStorageService {
     private final Path root;
 
     private static final Set<String> ALLOWED_EXT =
-            Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
+            Set.of(".jpg", ".jpeg", ".png");
 
     public ImageStorageService(@Value("${storage.upload-dir}") String uploadDir) {
         this.root = Paths.get(uploadDir).toAbsolutePath().normalize();
