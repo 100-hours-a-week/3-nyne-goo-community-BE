@@ -14,7 +14,7 @@ import lombok.Setter;
 public class ImageResponseDto {
     @JsonIgnore // response 에서 숨김
     private String imageUUID;
-    private String ImageName;
+    private String imageName;
 
     @JsonProperty("imageUrl")    // response에 이 키로만 노출
     public String getProfileImageUrl(){
