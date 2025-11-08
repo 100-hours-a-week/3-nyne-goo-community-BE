@@ -64,8 +64,8 @@ public class PostRepositoryImpl implements PostQueryRepository {
                         Projections.constructor(Author.class,
                                 new CaseBuilder()
                                         .when(user.imageUUID.isNotNull())
-                                        .then(user.imageUUID.prepend(constant("http://localhost:8080/uploads/")))
-                                        .otherwise((String) null)
+                                        .then(true)
+                                        .otherwise(false)
                                         .as("profileImageUrl"),
                                 user.nickname,
                                 new CaseBuilder()
@@ -108,8 +108,8 @@ public class PostRepositoryImpl implements PostQueryRepository {
                         Projections.constructor(Author.class,
                                 new CaseBuilder()
                                         .when(user.imageUUID.isNotNull())
-                                        .then(user.imageUUID.prepend(constant("http://localhost:8080/uploads/")))
-                                        .otherwise((String) null)
+                                        .then(true)
+                                        .otherwise(false)
                                         .as("profileImageUrl"),
                                 user.nickname,
                                 new CaseBuilder()
@@ -131,7 +131,7 @@ public class PostRepositoryImpl implements PostQueryRepository {
 
             System.out.println("imageListSize = " + postImageList.size());
             for (PostImage postImage : postImageList) {
-                ImageResponseDto imageResponseDto = ImageResponseDto.from(postImage);
+                ImageResponseDto imageResponseDto = ImageResponseDto.of(postImage.getImageUUID(), postImage.getImageName());
                 imageList.add(imageResponseDto);
             }
 

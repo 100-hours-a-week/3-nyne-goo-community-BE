@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Builder
 @AllArgsConstructor
 public class CreatePostResponseDto {
     private int postId;
@@ -18,17 +17,12 @@ public class CreatePostResponseDto {
     private String content;
     private List<String> imageList;
 
-    public static CreatePostResponseDto from(Post post) {
+    public static CreatePostResponseDto of(int postId, String title, String content, List<PostImage> postImages) {
         List<String> images = new ArrayList<>();
-        for(PostImage postImage:post.getImages()){
+        for(PostImage postImage:postImages) {
             images.add(postImage.getImageName());
         }
 
-        return CreatePostResponseDto.builder()
-                .postId(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .imageList(images)
-                .build();
+        return new CreatePostResponseDto(postId, title, content, images);
     }
 }
