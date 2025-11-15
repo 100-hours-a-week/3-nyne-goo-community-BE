@@ -32,13 +32,12 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final CookieUtil cookieUtil;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     @Operation(summary = "회원가입")
     public ResponseEntity<ApiResponse<SignUpResponseDto>> signUp(
-            @Valid @ModelAttribute SignUpRequestDto signUpRequestDto,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestBody SignUpRequestDto signUpRequestDto){
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "회원가입 되었습니다.", userService.signUp(signUpRequestDto, image)));
+                .body(ApiResponse.success(201, "회원가입 되었습니다.", userService.signUp(signUpRequestDto)));
     }
 
     @DeleteMapping

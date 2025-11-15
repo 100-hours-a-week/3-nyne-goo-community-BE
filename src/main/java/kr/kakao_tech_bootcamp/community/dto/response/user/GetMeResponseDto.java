@@ -17,6 +17,6 @@ public class GetMeResponseDto {
 
     @JsonProperty("profileImageUrl")    // response에 이 키로만 노출
     public String getProfileImageUrl(){
-        return (imageUUID==null)?null:"/uploads/"+imageUUID;
+        return (imageUUID==null)?null:imageUUID;
     }
 }

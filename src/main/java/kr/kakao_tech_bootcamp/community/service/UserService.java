@@ -52,7 +52,7 @@ public class UserService {
     }
 
     // 회원가입
-    public SignUpResponseDto signUp(SignUpRequestDto signUpRequestDto, MultipartFile image) {
+    public SignUpResponseDto signUp(SignUpRequestDto signUpRequestDto) {
         // 닉네임, 비밀번호 길이 확인
         if (signUpRequestDto.getNickname().length() > 10 || signUpRequestDto.getNickname().isEmpty()) {
             throw new RestApiException(UserErrorCode.INVALID_NICKNAME);
@@ -64,16 +64,16 @@ public class UserService {
 
         String imageUUID = null;
         String imageName = null;
+        String imageUrl = signUpRequestDto.getImageUrl();
 
-        if (image != null) {
-            ImageStorageService.SavedImage savedImage = imageStorageService.saveImage(image);
+        /*if (signUpRequestDto.getImageUrl() != null) {
             imageUUID = savedImage.imageUUID();
             imageName = savedImage.imageName();
-        }
+        }*/
 
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
 
-        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageUUID, imageName);
+        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageUrl, imageName);
         userRepository.save(user);
 
         return SignUpResponseDto.of(user.getId());
