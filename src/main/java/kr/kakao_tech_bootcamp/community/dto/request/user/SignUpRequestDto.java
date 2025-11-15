@@ -26,4 +26,6 @@ public class SignUpRequestDto {
     @Size(max = 10, message = "닉네임은 10자를 초과할 수 없습니다.")
     @Schema(example = "test")
     private String nickname;
+
+    private String imageUrl;
 }
