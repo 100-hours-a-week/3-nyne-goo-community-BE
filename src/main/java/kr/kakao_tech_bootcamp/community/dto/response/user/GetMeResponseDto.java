@@ -10,13 +10,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(staticName = "of")
 public class GetMeResponseDto {
-    @JsonIgnore // response 에서 숨김
-    private String imageUUID;
+    private String imagePath;
     private String email;
     private String nickname;
-
-    @JsonProperty("profileImageUrl")    // response에 이 키로만 노출
-    public String getProfileImageUrl(){
-        return (imageUUID==null)?null:imageUUID;
-    }
 }

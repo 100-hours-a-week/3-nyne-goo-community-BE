@@ -1,14 +1,13 @@
-package kr.kakao_tech_bootcamp.community.dto.response.post;
+package kr.kakao_tech_bootcamp.community.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ImageResponseDto {
+@NoArgsConstructor
+public class ImageRequestDto {
     private String imagePath;
     private String imageName;
 }

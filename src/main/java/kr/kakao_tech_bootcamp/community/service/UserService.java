@@ -4,6 +4,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.UserStatus;
+import kr.kakao_tech_bootcamp.community.dto.request.ImageRequestDto;
+import kr.kakao_tech_bootcamp.community.dto.request.user.ChangeMyInfoRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.CheckPasswordRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseDto;
@@ -20,15 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -37,7 +30,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ImageStorageService imageStorageService;
 
     // 이메일 중복 확인
     @Transactional(readOnly = true)
@@ -62,18 +54,10 @@ public class UserService {
             throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
         }
 
-        String imageUUID = null;
-        String imageName = null;
-        String imageUrl = signUpRequestDto.getImageUrl();
-
-        /*if (signUpRequestDto.getImageUrl() != null) {
-            imageUUID = savedImage.imageUUID();
-            imageName = savedImage.imageName();
-        }*/
-
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
+        ImageRequestDto imageRequestDto = signUpRequestDto.getImage();
 
-        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageUrl, imageName);
+        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageRequestDto.getImagePath(), imageRequestDto.getImageName());
         userRepository.save(user);
 
         return SignUpResponseDto.of(user.getId());
@@ -83,12 +67,16 @@ public class UserService {
     @Transactional(readOnly = true) // 읽기 전용. 변경 감지 x -> 불필요한 DB I/O 생략
     public GetMeResponseDto getMyInfo(int userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(CommonErrorCode.NOT_FOUND));
-        return GetMeResponseDto.of(user.getImageUUID(), user.getEmail(), user.getNickname());
+        System.out.println("User image path = " + user.getImagePath());
+        return GetMeResponseDto.of(user.getImagePath(), user.getEmail(), user.getNickname());
     }
 
     // 회원정보 수정
-    public void changeMyInfo(int userId, String nickname, MultipartFile image) {
+    public void changeMyInfo(int userId, ChangeMyInfoRequestDto changeMyInfoRequestDto) {
         // 닉네임 길이 확인
+        String nickname = changeMyInfoRequestDto.getNickname();
+        ImageRequestDto imageRequestDto = changeMyInfoRequestDto.getImage();
+        String imagePath = imageRequestDto.getImagePath();
         if (nickname == null || nickname.isEmpty()) {
             throw new IllegalArgumentException("닉네임을 입력해주세요");
         }
@@ -105,9 +93,8 @@ public class UserService {
 
         user.setNickname(nickname);
 
-        if (image != null) {
-            ImageStorageService.SavedImage savedImage = imageStorageService.saveImage(image);
-            user.setImage(savedImage.imageUUID(), savedImage.imageName());
+        if (imagePath != null) {
+            user.setImage(imagePath, imageRequestDto.getImageName());
         }
     }
 

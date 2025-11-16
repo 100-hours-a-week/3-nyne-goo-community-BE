@@ -18,8 +18,8 @@ public class PostImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false, name="image_uuid")
-    private String imageUUID;
+    @Column(nullable = false, name="image_path")
+    private String imagePath;
 
     @Column(nullable = false, name="image_original_name")
     private String imageName;
@@ -34,8 +34,8 @@ public class PostImage {
     @JoinColumn(name="post_id")
     private Post post;
 
-    public PostImage(String imageUUID, String imageName, int imageOrder, Post post) {
-        this.imageUUID = imageUUID;
+    public PostImage(String imagePath, String imageName, int imageOrder, Post post) {
+        this.imagePath = imagePath;
         this.imageName = imageName;
         this.createdAt = LocalDateTime.now();
         this.imageOrder = imageOrder;

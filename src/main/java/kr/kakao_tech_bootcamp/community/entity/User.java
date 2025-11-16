@@ -38,29 +38,29 @@ public class User {
     @Column(nullable = false, name = "status")
     private UserStatus userStatus;
 
-    @Column(name = "image_uuid")
-    private String imageUUID;
+    @Column(nullable = false, name = "image_path")
+    private String imagePath;
 
-    @Column(name = "image_original_name")
+    @Column(nullable = false, name="image_original_name")
     private String imageName;
 
-    public User(String email, String nickname, String password, String imageUUID, String imageName) {
+    public User(String email, String nickname, String password, String imagePath, String imageName) {
         this.email = email;
         this.nickname = nickname;
         this.password = password;
         this.createdAt = LocalDateTime.now();
         this.userStatus = UserStatus.ACTIVE;
 
-        this.imageUUID = imageUUID;
-        this.imageName = imageName;
+        this.imagePath=imagePath;
+        this.imageName=imageName;
     }
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
 
-    public void setImage(String imageUUID, String imageName) {
-        this.imageUUID = imageUUID;
+    public void setImage(String imagePath, String imageName) {
+        this.imagePath = imagePath;
         this.imageName = imageName;
     }
 

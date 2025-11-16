@@ -12,8 +12,8 @@ import java.util.List;
 public interface PostImageRepository extends JpaRepository<PostImage, Long> {
     List<PostImage> findByPost_Id(int postId);
 
-    @Query("select pi.imageUUID from PostImage pi where pi.post.deletedAt < :cutoff")
-    List<String> findAllUuidsByPostDeletedAtBefore(LocalDateTime cutoff);
+    @Query("select pi.imagePath from PostImage pi where pi.post.deletedAt < :cutoff")
+    List<String> findAllImagePathByPostDeletedAtBefore(LocalDateTime cutoff);
 
     @Query("delete from PostImage pi where pi.post.deletedAt < :cutoff")
     void deleteAllByPostDeletedAtBefore(LocalDateTime cutoff);
