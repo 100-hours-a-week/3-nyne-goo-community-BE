@@ -10,13 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 public class Author {
-    @JsonIgnore // response 에서 숨김
-    private String imageUUID;
+    private ImageResponseDto image;
     private String name;
     private boolean mine;
-
-    @JsonProperty("profileImageUrl")    // response에 이 키로만 노출
-    public String getProfileImageUrl(){
-        return (imageUUID==null)?null:"/uploads/"+imageUUID;
-    }
 }

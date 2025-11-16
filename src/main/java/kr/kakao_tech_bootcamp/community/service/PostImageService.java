@@ -1,5 +1,6 @@
 package kr.kakao_tech_bootcamp.community.service;
 
+import kr.kakao_tech_bootcamp.community.dto.request.ImageRequestDto;
 import kr.kakao_tech_bootcamp.community.entity.Post;
 import kr.kakao_tech_bootcamp.community.entity.PostImage;
 import kr.kakao_tech_bootcamp.community.exception.RestApiException;
@@ -22,19 +23,16 @@ import java.util.*;
 @Transactional
 public class PostImageService {
     private final PostImageRepository postImageRepository;
-    private final ImageStorageService imageStorageService;
 
     // 이미지 추가
-    public List<PostImage> createPostImages(List<MultipartFile> imageList, Post post) {
+    public List<PostImage> createPostImages(List<ImageRequestDto> imageList, Post post) {
         List<PostImage> postImageList = new ArrayList<>();
         if(imageList == null) return postImageList;
 
         // 이미지 리스트에서 이미지 하나씩 꺼내와 이름과 UUID+확장자 저장
         for(int i=0; i<imageList.size();i++){
-            MultipartFile image = imageList.get(i);
-            ImageStorageService.SavedImage savedImage = imageStorageService.saveImage(image);
-
-            PostImage postImage = new PostImage(savedImage.imageUUID(), savedImage.imageName(), i, post);
+            ImageRequestDto imageRequestDto = imageList.get(i);
+            PostImage postImage = new PostImage(imageRequestDto.getImagePath(), imageRequestDto.getImageName(), i, post);
             postImageList.add(postImage);
         }
 

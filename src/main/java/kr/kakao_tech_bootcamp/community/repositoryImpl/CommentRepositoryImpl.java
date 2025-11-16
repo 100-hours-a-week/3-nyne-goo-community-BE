@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.kakao_tech_bootcamp.community.dto.response.comment.AllCommentResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.AllPostResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.post.Author;
+import kr.kakao_tech_bootcamp.community.dto.response.post.ImageResponseDto;
 import kr.kakao_tech_bootcamp.community.repository.comment.CommentQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +37,9 @@ public class CommentRepositoryImpl implements CommentQueryRepository {
                         comment.createdAt,
                         comment.updatedAt,
                         Projections.constructor(Author.class,
-                                user.imageUUID,
+                                Projections.constructor(ImageResponseDto.class,
+                                        user.imagePath,
+                                        user.imageName),
                                 user.nickname,
                                 comment.user.id.eq(userId))
                 ))

@@ -54,28 +54,26 @@ public class PostController {
                 .body(ApiResponse.success(200, "게시글을 성공적으로 조회했습니다.", postService.getPostDetail(userId, postId)));
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     @Operation(summary = "게시글 생성", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
             HttpServletRequest request,
-            @ModelAttribute CreatePostRequestDto createPostRequestDto,
-            @RequestPart(value="images", required=false) List<MultipartFile> imageList
+            @RequestBody CreatePostRequestDto createPostRequestDto
     ){
         int userId = jwtProvider.extractUserIdFromRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(userId, createPostRequestDto, imageList)));
+                .body(ApiResponse.success(201, "게시글을 생성했습니다.", postService.createPost(userId, createPostRequestDto)));
     }
 
-    @PatchMapping(path = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(path = "/{postId}")
     @Operation(summary = "게시글 수정", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>>  updatePost(
             HttpServletRequest request,
             @PathVariable int postId,
-            @ModelAttribute UpdatePostRequestDto updatePostRequestDto,
-            @RequestPart(value="images", required = false) List<MultipartFile> imageList
+            @RequestBody UpdatePostRequestDto updatePostRequestDto
     ){
         int userId = jwtProvider.extractUserIdFromRequest(request);
-        postService.updatePost(userId, postId, updatePostRequestDto, imageList);
+        postService.updatePost(userId, postId, updatePostRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "게시글 수정에 성공했습니다."));

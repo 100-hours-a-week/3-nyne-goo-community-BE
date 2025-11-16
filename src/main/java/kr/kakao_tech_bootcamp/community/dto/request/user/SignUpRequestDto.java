@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import kr.kakao_tech_bootcamp.community.dto.request.ImageRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,5 +28,5 @@ public class SignUpRequestDto {
     @Schema(example = "test")
     private String nickname;
 
-    private String imageUrl;
+    private ImageRequestDto image;
 }

@@ -2,7 +2,6 @@ package kr.kakao_tech_bootcamp.community.scheduler;
 
 import kr.kakao_tech_bootcamp.community.repository.post.PostImageRepository;
 import kr.kakao_tech_bootcamp.community.repository.post.PostRepository;
-import kr.kakao_tech_bootcamp.community.service.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +19,6 @@ import java.util.List;
 public class PostDeleteScheduler {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
-    private final ImageStorageService imageStorageService;
 
     // 매일 3시마다 30일 지난 게시글 있다면 삭제
     @Scheduled(cron = "0 0 3 * * *")
@@ -29,7 +27,7 @@ public class PostDeleteScheduler {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
 
         // 삭제 대상 게시글들의 이미지 UUID 먼저 수집
-        List<String> uuids = postImageRepository.findAllUuidsByPostDeletedAtBefore(cutoff);
+        List<String> uuids = postImageRepository.findAllImagePathByPostDeletedAtBefore(cutoff);
 
         // db 에서 삭제
         postRepository.deleteByDeletedAtBefore(cutoff);
@@ -43,7 +41,6 @@ public class PostDeleteScheduler {
                         int success = 0, fail = 0;
                         for (String id : uuids) {
                             try {
-                                imageStorageService.deleteImage(id); // 실제 파일 삭제
                                 success++;
                             } catch (Exception e) {
                                 fail++;
