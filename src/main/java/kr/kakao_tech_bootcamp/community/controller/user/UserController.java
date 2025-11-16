@@ -6,10 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kr.kakao_tech_bootcamp.community.dto.ApiResponse;
-import kr.kakao_tech_bootcamp.community.dto.request.user.ChangePasswordRequestDto;
-import kr.kakao_tech_bootcamp.community.dto.request.user.CheckPasswordRequestDto;
-import kr.kakao_tech_bootcamp.community.dto.request.user.EmailCheckRequestDto;
-import kr.kakao_tech_bootcamp.community.dto.request.user.SignUpRequestDto;
+import kr.kakao_tech_bootcamp.community.dto.request.user.*;
 import kr.kakao_tech_bootcamp.community.dto.response.user.CheckPasswordResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.ExistCheckResponseDto;
 import kr.kakao_tech_bootcamp.community.dto.response.user.GetMeResponseDto;
@@ -73,14 +70,13 @@ public class UserController {
                 .body(ApiResponse.success(200, "회원 정보를 성공적으로 조회했습니다.", userService.getMyInfo(userId)));
     }
 
-    @PatchMapping( consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping
     @Operation(summary = "내 정보 변경", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<ApiResponse<Void>> changeMyInfo(
             HttpServletRequest request,
-            @RequestParam String nickname,
-            @RequestPart(value = "image", required = false) MultipartFile image){
+            @RequestBody ChangeMyInfoRequestDto changeMyInfoRequestDto){
         int userId = jwtProvider.extractUserIdFromRequest(request);
-        userService.changeMyInfo(userId, nickname, image);
+        userService.changeMyInfo(userId, changeMyInfoRequestDto);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(200, "회원 정보가 수정되었습니다."));
     }

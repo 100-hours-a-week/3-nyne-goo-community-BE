@@ -60,7 +60,9 @@ public class PostRepositoryImpl implements PostQueryRepository {
                         post.viewsCount,
                         post.user.id.eq(userId),
                         Projections.constructor(Author.class,
-                                user.imageUUID,
+                                Projections.constructor(ImageResponseDto.class,
+                                        user.imagePath,
+                                        user.imageName),
                                 user.nickname,
                                 post.user.id.eq(userId))
                 ))
@@ -96,7 +98,9 @@ public class PostRepositoryImpl implements PostQueryRepository {
                         post.viewsCount,
                         post.user.id.eq(userId),
                         Projections.constructor(Author.class,
-                                user.imageUUID,
+                                Projections.constructor(ImageResponseDto.class,
+                                        user.imagePath,
+                                        user.imageName),
                                 user.nickname,
                                 post.user.id.eq(userId)
                         )
@@ -115,7 +119,7 @@ public class PostRepositoryImpl implements PostQueryRepository {
 
             System.out.println("imageListSize = " + postImageList.size());
             for (PostImage postImage : postImageList) {
-                ImageResponseDto imageResponseDto = ImageResponseDto.of(postImage.getImageUUID(), postImage.getImageName());
+                ImageResponseDto imageResponseDto = new ImageResponseDto(postImage.getImagePath(), postImage.getImageName());
                 imageList.add(imageResponseDto);
             }
 
