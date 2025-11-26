@@ -1,0 +1,17 @@
+out
+.gradle
+
+.git
+.gitignore
+.vscode
+.idea
+*.iml
+
+*.log
+.DS_Store
+
+Dockerfile
+docker-compose.yml
+
+.env
+application-secret.yml
