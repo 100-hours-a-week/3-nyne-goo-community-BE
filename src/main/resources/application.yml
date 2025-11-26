@@ -47,7 +47,7 @@ logging:
 
 app:
   frontend:
-    url: ${FRONTEND_URL:http://localhost:3000}
+    url: ${FRONTEND_URL}
 
 storage:
   upload-dir: /home/ubuntu/uploads
