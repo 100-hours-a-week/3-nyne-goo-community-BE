@@ -51,3 +51,6 @@ app:
 
 storage:
   upload-dir: /home/ubuntu/uploads
+
+jwt:
+  secret: ${JWT_SECRET}
