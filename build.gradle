@@ -55,6 +55,9 @@ dependencies {
     // crypto
     implementation 'org.springframework.security:spring-security-crypto:6.3.3'
 
+    // h2 test
+    testImplementation 'com.h2database:h2'
+
 }
 
 test{
