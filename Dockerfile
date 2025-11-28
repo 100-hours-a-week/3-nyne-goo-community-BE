@@ -7,7 +7,7 @@ RUN ./gradlew clean bootJar
 # 런타임
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY build/libs/community-0.0.1-SNAPSHOT.jar /app/community-0.0.1-SNAPSHOT.jar
+COPY --from=builder /app/build/libs/community-0.0.1-SNAPSHOT.jar /app/community-0.0.1-SNAPSHOT.jar
 
 EXPOSE 8080
 
