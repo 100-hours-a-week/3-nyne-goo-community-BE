@@ -1,6 +1,6 @@
 services:
   backend:
-    image: tnald/dorandoran-be:v1.4
+    image: tnald/dorandoran-be:latest
     container_name: dorandoran-be
 
     ports:
