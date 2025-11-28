@@ -14,4 +14,7 @@ spring:
     init:
       mode: never # data.sql, schema.sql 자동 실행 막음
 
+jwt:
+  secret: "test-jwt-secret"
+
 FRONTEND_URL: http://localhost:3000
