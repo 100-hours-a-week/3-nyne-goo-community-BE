@@ -1,7 +1,8 @@
 # 빌드
-FROM eclipse-temurin:21-jre-alpine AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 COPY . .
+RUN java -version && echo "JAVA_HOME=$JAVA_HOME"
 RUN ./gradlew clean bootJar
 
 # 런타임
