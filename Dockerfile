@@ -1,5 +1,5 @@
 # 빌드
-FROM gradle:9.7-jdk17-alpine AS builder
+FROM gradle:8.7-jdk17-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN ./gradlew clean bootJar
