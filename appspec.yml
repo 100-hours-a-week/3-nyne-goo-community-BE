@@ -6,6 +6,11 @@ files:
     destination: /home/ubuntu/dorandoran-be
 
 hooks:
+  BeforeInstall:
+    - location: scripts/cleanup.sh
+      timeout: 60
+      runas: ubuntu
+
   ApplicationStart:
     - location: scripts/deploy.sh
       timeout: 300
