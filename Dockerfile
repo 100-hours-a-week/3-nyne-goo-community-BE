@@ -1,3 +1,10 @@
+# 빌드
+FROM gradle:9.7-jdk17-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN ./gradlew clean bootJar
+
+# 런타임
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY build/libs/community-0.0.1-SNAPSHOT.jar /app/community-0.0.1-SNAPSHOT.jar
