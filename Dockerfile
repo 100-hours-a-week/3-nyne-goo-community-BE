@@ -1,5 +1,5 @@
 # 빌드
-FROM gradle:8.7-jdk17-alpine AS builder
+FROM eclipse-temurin:21-jre-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN ./gradlew clean bootJar
