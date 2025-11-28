@@ -15,6 +15,6 @@ spring:
       mode: never # data.sql, schema.sql 자동 실행 막음
 
 jwt:
-  secret: "test-jwt-secret"
+  secret: "dGVzdC1qd3Qtc2VjcmV0LXN1cGVyLWxvbmctc3VwZXItbG9uZy10ZXN0LWtleQ==" # test-jwt-secret-super-long-super-long-test-key의 base64 인코딩 값
 
 FRONTEND_URL: http://localhost:3000
