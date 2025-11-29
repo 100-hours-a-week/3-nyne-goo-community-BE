@@ -28,8 +28,8 @@ replay_pid*
 
 # 비밀 설정 파일
 src/main/resources/application-secret.yml
-.env.production
-.env.development
+.env
+.env.*
 
 # 실행 파일 ignore 하지 않게 함
 !gradle/wrapper/gradle-wrapper.jar
