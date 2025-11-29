@@ -38,10 +38,10 @@ public class User {
     @Column(nullable = false, name = "status")
     private UserStatus userStatus;
 
-    @Column(nullable = false, name = "image_path")
+    @Column(name = "image_path")
     private String imagePath;
 
-    @Column(nullable = false, name="image_original_name")
+    @Column(name="image_original_name")
     private String imageName;
 
     public User(String email, String nickname, String password, String imagePath, String imageName) {
