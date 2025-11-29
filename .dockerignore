@@ -13,5 +13,5 @@ out
 Dockerfile
 docker-compose.yml
 
-.env
+.env.production
 application-secret.yml

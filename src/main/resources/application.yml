@@ -37,7 +37,7 @@ spring:
     check-template-location: true
 
   profiles:
-    include: secret
+    active: dev
 
 logging:
   level:
@@ -48,9 +48,6 @@ logging:
 app:
   frontend:
     url: ${FRONTEND_URL}
-
-storage:
-  upload-dir: /home/ubuntu/uploads
 
 jwt:
   secret: ${JWT_SECRET}

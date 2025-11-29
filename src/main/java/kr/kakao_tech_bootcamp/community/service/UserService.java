@@ -1,8 +1,5 @@
 package kr.kakao_tech_bootcamp.community.service;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.UserStatus;
 import kr.kakao_tech_bootcamp.community.dto.request.ImageRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.ChangeMyInfoRequestDto;
@@ -15,7 +12,6 @@ import kr.kakao_tech_bootcamp.community.entity.User;
 import kr.kakao_tech_bootcamp.community.exception.RestApiException;
 import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
 import kr.kakao_tech_bootcamp.community.exception.error_code.UserErrorCode;
-import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.repository.RefreshTokenRepository;
 import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
