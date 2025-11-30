@@ -8,4 +8,5 @@ import lombok.Getter;
 @AllArgsConstructor (staticName = "of")
 public class SignUpResponseDto {
     private int userId;
+    private String email;
 }

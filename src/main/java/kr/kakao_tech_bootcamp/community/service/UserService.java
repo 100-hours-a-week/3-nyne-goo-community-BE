@@ -1,8 +1,5 @@
 package kr.kakao_tech_bootcamp.community.service;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import kr.kakao_tech_bootcamp.community.UserStatus;
 import kr.kakao_tech_bootcamp.community.dto.request.ImageRequestDto;
 import kr.kakao_tech_bootcamp.community.dto.request.user.ChangeMyInfoRequestDto;
@@ -15,7 +12,6 @@ import kr.kakao_tech_bootcamp.community.entity.User;
 import kr.kakao_tech_bootcamp.community.exception.RestApiException;
 import kr.kakao_tech_bootcamp.community.exception.error_code.CommonErrorCode;
 import kr.kakao_tech_bootcamp.community.exception.error_code.UserErrorCode;
-import kr.kakao_tech_bootcamp.community.jwt.JwtProvider;
 import kr.kakao_tech_bootcamp.community.repository.RefreshTokenRepository;
 import kr.kakao_tech_bootcamp.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -54,13 +50,18 @@ public class UserService {
             throw new RestApiException(UserErrorCode.INVALID_PASSWORD);
         }
 
+        // 닉네임, 비밀번호 중복 확인 (curl 접근하는 경우 고려)
+        if(userRepository.findByEmail(signUpRequestDto.getEmail()).isPresent() || userRepository.findByNickname(signUpRequestDto.getNickname()).isPresent()) {
+            throw new RestApiException(CommonErrorCode.CONFLICT);
+        }
+
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
         ImageRequestDto imageRequestDto = signUpRequestDto.getImage();
 
-        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageRequestDto.getImagePath(), imageRequestDto.getImageName());
+        User user = new User(signUpRequestDto.getEmail(), signUpRequestDto.getNickname(), encodedPassword, imageRequestDto==null?null:imageRequestDto.getImagePath(), imageRequestDto==null?null:imageRequestDto.getImageName());
         userRepository.save(user);
 
-        return SignUpResponseDto.of(user.getId());
+        return SignUpResponseDto.of(user.getId(), user.getEmail());
     }
 
     // 내 정보 조회
